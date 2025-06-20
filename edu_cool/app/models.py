@@ -19,11 +19,11 @@ class Course(models.Model):
     Description: just as the title, a room that gathers students and tutors
     """
     
-    tutor = models.ForeignKey('auth.User', on_delete=models.CASCADE, related_name='courses')
+    tutor = models.ForeignKey('auth.User', on_delete=models.CASCADE, related_name='my_courses')
 
-    title = models.TextField(max_length= 150, blank= False, default='')
+    title = models.TextField(max_length= 150, default='')
 
-    students = models.ManyToManyField('auth.User')
+    students = models.ManyToManyField('auth.User', blank = True, related_name = 'enrolled_courses')
 
 
 class Announcement(models.Model):
