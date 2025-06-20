@@ -36,7 +36,7 @@ class Announcement(models.Model):
     
     title = models.TextField(max_length=150, blank = True, default='')
     
-    content = models.TextField(max_length=1000, blank = False, default = '')
+    content = models.TextField(max_length=1000)
     
     time = models.DateTimeField(auto_now_add=True)
     
@@ -44,6 +44,7 @@ class Announcement(models.Model):
     
     #NOTE: it defaults to the file system storage
     # would rather use a proper object storage sys in production
+    #NOTE: WE NEED TO LIMIT THE UPLOADED FILE SIZE TO AVOID DOS ATTACKS
 
 
 class Comment(models.Model):
@@ -56,6 +57,6 @@ class Comment(models.Model):
     
     announcement = models.ForeignKey('Announcement', on_delete=models.CASCADE, related_name='comments')
     
-    content = models.TextField(max_length=500, blank=False, default='')
+    content = models.TextField(max_length=500, default='')
     
     time = models.DateTimeField(auto_now_add=True)
