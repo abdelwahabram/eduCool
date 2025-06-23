@@ -126,6 +126,95 @@ class AnnouncementViewSet(viewsets.ModelViewSet):
 		return serializer.save(course=course)
 
 
+class CommentViewSet(viewsets.ModelViewSet):
+	queryset = Comment.objects.all()
+	serializer_class = CommentSerializer
+
+	# list: announcements/announcement_pk/comments
+	def get_queryset(self, *args, **kwargs):
+		"""
+		Description: override the original method to filter the comments
+		of a given announcement in case of list operation
+		"""
+
+		announcement_id = self.kwargs.get("announcement_pk")
+
+		if announcement_id is None:
+			return self.queryset
+
+		try:
+			announcement = Announcement.objects.get(id=announcement_id)
+		except Announcement.DoesNotExist:
+			raise NotFound('404 class not found')
+
+		return self.queryset.filter(announcement=announcement)
+
+	def perform_create(self, serializer):
+		
+		"""
+		Description: override the original method to save the parent announcement of the comment
+		"""
+
+		announcement_id = self.kwargs.get("announcement_pk")
+
+		try:
+			announcement = Announcement.objects.get(id=announcement_id)
+		except Announcement.DoesNotExist:
+			raise NotFound('404 class not found')
+
+		return serializer.save(announcement=announcement, author = self.request.user)
+
+
+class StudentViewSet(viewsets.ModelViewSet):
+	queryset = User.objects.all()
+
+	serializer_class = UserSerializer
+
+	def get_queryset(self, *args, **kwargs):
+		"""
+		Description:
+		override the original method to filter the students
+		of a given course id in case of list operation
+		"""
+
+		course_id = self.kwargs.get("course_pk")
+
+		try:
+			course = Course.objects.get(id=course_id)
+		except Course.DoesNotExist:
+			raise NotFound('404 class not found')
+
+		return self.queryset.filter(enrolled_courses=course)
+
+
+	# def update(self, request, *args, **kwargs):
+	# 	# print(request.data)
+
+	# 	partial = kwargs.pop('partial')
+
+	# 	course_id = kwargs.pop('course_pk')
+		
+	# 	# instance = request.user
+
+	# 	course = Course.objects.get(id=course_id)
+
+	# 	# serializer = self.serializer_class(instance, partial)
+	# 	# print(serializer)
+	# 	# serializer.enrolled_courses.add(course)
+
+	# 	# course_serializer = CourseSerializer(course, partial)
+
+	# 	# course_serializer.students.add(request.user)
+
+	# 	course.students.add(request.user)
+
+	# 	course.save()
+
+	# 	# if course_serializer.is_valid():
+	# 	# 	course_serializer.save()
+	# 	return Response(course_serializer.data)
+
+
 class UserViewSet(viewsets.ReadOnlyModelViewSet):
 	"""
 	list users or get a user account
