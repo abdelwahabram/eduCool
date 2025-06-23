@@ -50,4 +50,4 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
 		
 		model = User
 		
-		fields = ['id', 'url', 'username', 'my_courses']
+		fields = ['id', 'url', 'username', 'my_courses', 'enrolled_courses']
