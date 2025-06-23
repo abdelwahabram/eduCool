@@ -7,7 +7,9 @@ from app.models import Course, Announcement, Comment
 from app.serializers import CourseSerializer, AnnouncementSerializer, UserSerializer, CommentSerializer
 
 from rest_framework import viewsets
+
 from rest_framework.decorators import action
+
 from rest_framework.exceptions import NotFound
 
 from rest_framework.response import Response
@@ -24,46 +26,25 @@ class CourseViewSet(viewsets.ModelViewSet):
 	queryset = Course.objects.all()
 
 	serializer_class = CourseSerializer
-	
 
-	# def partial_update(self, request, course_pk):
-
-	# 	course_instance = self.get_object()
-
-	# 	serializer = CourseSerializer(course_instance)
-
-	# 	serializer.students.add(request.user)
-
-	# 	if serializer.is_valid():
-	# 		serializer.save()
-	# 		return Response(serializer.data, status=status.HTTP_200_OK)
-		
 
 	@action(detail = True, methods=['patch'])
-
 	def join(self, request, *args, **kwargs):
+		
 		course = self.get_object()
-
-		# print(course.students)
 
 		course.students.add(request.user)
 
 		serializer = CourseSerializer(course, request.data, partial=True)
 
 		if serializer.is_valid():
+			
 			serializer.save()
 
 			return Response(serializer)
 
-		# if course.is_valid():
-		# course.save()
-		# return Response(CourseSerializer(course, request.data).data)
-
-		# return Response()
-
-
-	# NOTE: ithink updating the relation for join is redundant and inserting in many to many relation serializer isn't handy, 
-	# I guess it'd be better to create a student_to_course model explicitly and whenever a student join => post request to that model
+		# NOTE: ithink updating the relation for join is redundant and inserting in many to many relation serializer isn't handy, 
+		# I guess it'd be better to create a student_to_course model explicitly and whenever a student join => post request to that model
 
 
 	def perform_create(self, serializer):
@@ -85,11 +66,7 @@ class AnnouncementViewSet(viewsets.ModelViewSet):
 
 	serializer_class = AnnouncementSerializer
 
-	# lookup_field = course
 
-	# lookup_url_kwarg = 'course_pk'
-
-	# list: courses/course_pk/announcements
 	def get_queryset(self, *args, **kwargs):
 		"""
 		Description: override the original method to filter the announcements
@@ -103,6 +80,7 @@ class AnnouncementViewSet(viewsets.ModelViewSet):
 
 		try:
 			course = Course.objects.get(id=course_id)
+		
 		except Course.DoesNotExist:
 			raise NotFound('404 class not found')
 
@@ -110,7 +88,6 @@ class AnnouncementViewSet(viewsets.ModelViewSet):
 
 
 	def perform_create(self, serializer):
-		
 		"""
 		Description: override the original method to save the course where the announcement was poasted
 		"""
@@ -118,8 +95,8 @@ class AnnouncementViewSet(viewsets.ModelViewSet):
 		course_id = self.kwargs.get("course_pk")
 
 		try:
-
 			course = Course.objects.get(id=course_id)
+		
 		except Course.DoesNotExist:
 			raise NotFound('404 class not found')
 
@@ -127,10 +104,12 @@ class AnnouncementViewSet(viewsets.ModelViewSet):
 
 
 class CommentViewSet(viewsets.ModelViewSet):
+	
 	queryset = Comment.objects.all()
+	
 	serializer_class = CommentSerializer
 
-	# list: announcements/announcement_pk/comments
+
 	def get_queryset(self, *args, **kwargs):
 		"""
 		Description: override the original method to filter the comments
@@ -144,13 +123,14 @@ class CommentViewSet(viewsets.ModelViewSet):
 
 		try:
 			announcement = Announcement.objects.get(id=announcement_id)
+		
 		except Announcement.DoesNotExist:
-			raise NotFound('404 class not found')
+			raise NotFound('404 announcement not found')
 
 		return self.queryset.filter(announcement=announcement)
 
+
 	def perform_create(self, serializer):
-		
 		"""
 		Description: override the original method to save the parent announcement of the comment
 		"""
@@ -159,16 +139,19 @@ class CommentViewSet(viewsets.ModelViewSet):
 
 		try:
 			announcement = Announcement.objects.get(id=announcement_id)
+		
 		except Announcement.DoesNotExist:
-			raise NotFound('404 class not found')
+			raise NotFound('404 announcement not found')
 
 		return serializer.save(announcement=announcement, author = self.request.user)
 
 
 class StudentViewSet(viewsets.ModelViewSet):
+	
 	queryset = User.objects.all()
 
 	serializer_class = UserSerializer
+
 
 	def get_queryset(self, *args, **kwargs):
 		"""
@@ -181,43 +164,18 @@ class StudentViewSet(viewsets.ModelViewSet):
 
 		try:
 			course = Course.objects.get(id=course_id)
+		
 		except Course.DoesNotExist:
 			raise NotFound('404 class not found')
 
 		return self.queryset.filter(enrolled_courses=course)
 
 
-	# def update(self, request, *args, **kwargs):
-	# 	# print(request.data)
-
-	# 	partial = kwargs.pop('partial')
-
-	# 	course_id = kwargs.pop('course_pk')
-		
-	# 	# instance = request.user
-
-	# 	course = Course.objects.get(id=course_id)
-
-	# 	# serializer = self.serializer_class(instance, partial)
-	# 	# print(serializer)
-	# 	# serializer.enrolled_courses.add(course)
-
-	# 	# course_serializer = CourseSerializer(course, partial)
-
-	# 	# course_serializer.students.add(request.user)
-
-	# 	course.students.add(request.user)
-
-	# 	course.save()
-
-	# 	# if course_serializer.is_valid():
-	# 	# 	course_serializer.save()
-	# 	return Response(course_serializer.data)
-
-
 class UserViewSet(viewsets.ReadOnlyModelViewSet):
 	"""
 	list users or get a user account
 	"""
+
 	queryset = User.objects.all()
+	
 	serializer_class = UserSerializer
