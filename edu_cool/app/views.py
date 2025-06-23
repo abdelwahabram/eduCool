@@ -85,14 +85,21 @@ class AnnouncementViewSet(viewsets.ModelViewSet):
 
 	serializer_class = AnnouncementSerializer
 
+	# lookup_field = course
+
+	# lookup_url_kwarg = 'course_pk'
+
 	# list: courses/course_pk/announcements
 	def get_queryset(self, *args, **kwargs):
 		"""
 		Description: override the original method to filter the announcements
-		of a specific course
+		of a specific course in case of list operation
 		"""
 
 		course_id = self.kwargs.get("course_pk")
+
+		if course_id is None:
+			return self.queryset
 
 		try:
 			course = Course.objects.get(id=course_id)
@@ -105,7 +112,7 @@ class AnnouncementViewSet(viewsets.ModelViewSet):
 	def perform_create(self, serializer):
 		
 		"""
-		Description: override the original method to 
+		Description: override the original method to save the course where the announcement was poasted
 		"""
 
 		course_id = self.kwargs.get("course_pk")
