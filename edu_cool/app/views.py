@@ -2,11 +2,15 @@ from django.shortcuts import render
 
 from django.contrib.auth.models import User
 
-from app.models import Course, Announcement
+from app.models import Course, Announcement, Comment
 
-from app.serializers import CourseSerializer, AnnouncementSerializer, UserSerializer
+from app.serializers import CourseSerializer, AnnouncementSerializer, UserSerializer, CommentSerializer
 
 from rest_framework import viewsets
+from rest_framework.decorators import action
+from rest_framework.exceptions import NotFound
+
+from rest_framework.response import Response
 
 # Create your views here.
 
@@ -20,6 +24,47 @@ class CourseViewSet(viewsets.ModelViewSet):
 	queryset = Course.objects.all()
 
 	serializer_class = CourseSerializer
+	
+
+	# def partial_update(self, request, course_pk):
+
+	# 	course_instance = self.get_object()
+
+	# 	serializer = CourseSerializer(course_instance)
+
+	# 	serializer.students.add(request.user)
+
+	# 	if serializer.is_valid():
+	# 		serializer.save()
+	# 		return Response(serializer.data, status=status.HTTP_200_OK)
+		
+
+	@action(detail = True, methods=['patch'])
+
+	def join(self, request, *args, **kwargs):
+		course = self.get_object()
+
+		# print(course.students)
+
+		course.students.add(request.user)
+
+		serializer = CourseSerializer(course, request.data, partial=True)
+
+		if serializer.is_valid():
+			serializer.save()
+
+			return Response(serializer)
+
+		# if course.is_valid():
+		# course.save()
+		# return Response(CourseSerializer(course, request.data).data)
+
+		# return Response()
+
+
+	# NOTE: ithink updating the relation for join is redundant and inserting in many to many relation serializer isn't handy, 
+	# I guess it'd be better to create a student_to_course model explicitly and whenever a student join => post request to that model
+
 
 	def perform_create(self, serializer):
 		"""
@@ -28,7 +73,7 @@ class CourseViewSet(viewsets.ModelViewSet):
 		"""
 
 		return serializer.save(tutor=self.request.user)
-        
+
 
 class AnnouncementViewSet(viewsets.ModelViewSet):
 	"""
