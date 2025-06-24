@@ -1,4 +1,4 @@
-from app.models import Course, Announcement, Comment
+from app.models import Course, Enrollment, Announcement, Comment
 
 from django.contrib.auth.models import User
 
@@ -18,6 +18,19 @@ class CourseSerializer(serializers.HyperlinkedModelSerializer):
 		model = Course
 		
 		fields = ['id', 'url', 'tutor', 'title', 'announcements', 'students']
+
+
+class EnrollmentSerializer(serializers.HyperlinkedModelSerializer):
+
+	course = serializers.HyperlinkedIdentityField(read_only=True, view_name='course-detail')
+
+	student = serializers.HyperlinkedIdentityField(read_only=True, view_name='user-detail')
+	
+	class Meta():
+
+		model = Enrollment
+		
+		fields = ['course', 'student', 'member_since']
 
 
 class AnnouncementSerializer(serializers.HyperlinkedModelSerializer):
