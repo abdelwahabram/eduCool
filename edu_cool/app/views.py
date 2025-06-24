@@ -2,9 +2,9 @@ from django.shortcuts import render
 
 from django.contrib.auth.models import User
 
-from app.models import Course, Announcement, Comment
+from app.models import Course, Enrollment, Announcement, Comment
 
-from app.serializers import CourseSerializer, AnnouncementSerializer, UserSerializer, CommentSerializer
+from app.serializers import CourseSerializer, EnrollmentSerializer, AnnouncementSerializer, UserSerializer, CommentSerializer
 
 from rest_framework import viewsets
 
@@ -169,6 +169,44 @@ class StudentViewSet(viewsets.ModelViewSet):
 			raise NotFound('404 class not found')
 
 		return self.queryset.filter(enrolled_courses=course)
+
+
+class EnrollmentViewSet(viewsets.ModelViewSet):
+
+	queryset = Enrollment.objects.all()
+
+	serializer_class = EnrollmentSerializer
+
+
+	def perform_create(self, serializer):
+
+		course_id = self.kwargs.get('course_pk')
+
+		try:
+			course = Course.objects.get(id=course_id)
+
+		except Course.DoesNotExist:
+			raise NotFound('404: course not found')
+
+		return serializer.save(course = course, student=self.request.user)
+
+
+	def get_queryset(self, *args, **kwargs):
+		"""
+		Description:
+		override the original method to filter the students
+		of a given course id in case of list operation
+		"""
+
+		course_id = self.kwargs.get("course_pk")
+
+		try:
+			course = Course.objects.get(id=course_id)
+		
+		except Course.DoesNotExist:
+			raise NotFound('404 class not found')
+
+		return self.queryset.filter(course=course)
 
 
 class UserViewSet(viewsets.ReadOnlyModelViewSet):
