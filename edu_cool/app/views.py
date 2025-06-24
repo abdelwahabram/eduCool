@@ -127,31 +127,6 @@ class CommentViewSet(viewsets.ModelViewSet):
 		return serializer.save(announcement=announcement, author = self.request.user)
 
 
-class StudentViewSet(viewsets.ModelViewSet):
-	
-	queryset = User.objects.all()
-
-	serializer_class = UserSerializer
-
-
-	def get_queryset(self, *args, **kwargs):
-		"""
-		Description:
-		override the original method to filter the students
-		of a given course id in case of list operation
-		"""
-
-		course_id = self.kwargs.get("course_pk")
-
-		try:
-			course = Course.objects.get(id=course_id)
-		
-		except Course.DoesNotExist:
-			raise NotFound('404 class not found')
-
-		return self.queryset.filter(enrolled_courses=course)
-
-
 class EnrollmentViewSet(viewsets.ModelViewSet):
 
 	queryset = Enrollment.objects.all()
