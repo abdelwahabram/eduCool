@@ -59,6 +59,8 @@ class CommentSerializer(serializers.HyperlinkedModelSerializer):
 
 class UserSerializer(serializers.HyperlinkedModelSerializer):
 
+	enrolled_courses = serializers.HyperlinkedRelatedField(many=True, read_only=True, view_name='course-detail')
+	
 	class Meta():
 		
 		model = User
