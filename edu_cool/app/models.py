@@ -23,7 +23,19 @@ class Course(models.Model):
 
     title = models.TextField(max_length= 150, default='')
 
-    students = models.ManyToManyField('auth.User', blank = True, related_name = 'enrolled_courses')
+    # students = models.ManyToManyField('auth.User', blank = True, related_name = 'enrolled_courses')
+
+
+class Enrollment(models.Model):
+    """
+    Description: map the student to the enrolled courses
+    """
+
+    course = models.ForeignKey('Course', on_delete=models.CASCADE, related_name='students')
+    
+    student = models.ForeignKey('auth.User', on_delete=models.CASCADE, related_name='enrolled_courses')
+
+    member_since = models.DateTimeField(auto_now_add=True)
 
 
 class Announcement(models.Model):
