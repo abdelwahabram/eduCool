@@ -28,25 +28,6 @@ class CourseViewSet(viewsets.ModelViewSet):
 	serializer_class = CourseSerializer
 
 
-	@action(detail = True, methods=['patch'])
-	def join(self, request, *args, **kwargs):
-		
-		course = self.get_object()
-
-		course.students.add(request.user)
-
-		serializer = CourseSerializer(course, request.data, partial=True)
-
-		if serializer.is_valid():
-			
-			serializer.save()
-
-			return Response(serializer)
-
-		# NOTE: ithink updating the relation for join is redundant and inserting in many to many relation serializer isn't handy, 
-		# I guess it'd be better to create a student_to_course model explicitly and whenever a student join => post request to that model
-
-
 	def perform_create(self, serializer):
 		"""
 		Description: override the original method to save the current user 
