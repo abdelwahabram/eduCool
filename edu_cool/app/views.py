@@ -16,14 +16,16 @@ from rest_framework.response import Response
 
 # Create your views here.
 
-# NOTE: THESE QS MIGHT CAUSE (N+1) PROBLEM SO WE NEED TO VISIT THIS LATER
 
 class CourseViewSet(viewsets.ModelViewSet):
 	"""
 	Description: post, list, retreive, or delete a course with specific pk
 	"""
 
-	queryset = Course.objects.all()
+	# queryset = Course.objects.select_related('tutor').prefetch_related('announcements').prefetch_related('students').all()
+	# no, idon't think we need to fetch all these data from the db since we're not using nested serialization
+
+	queryset = Course.objects.select_related('tutor').all()
 
 	serializer_class = CourseSerializer
 
@@ -43,7 +45,7 @@ class AnnouncementViewSet(viewsets.ModelViewSet):
 	retreive, or destroy: get or delete an announcement
 	"""
 
-	queryset = Announcement.objects.all()
+	queryset = Announcement.objects.select_related('course').all()
 
 	serializer_class = AnnouncementSerializer
 
@@ -86,7 +88,7 @@ class AnnouncementViewSet(viewsets.ModelViewSet):
 
 class CommentViewSet(viewsets.ModelViewSet):
 	
-	queryset = Comment.objects.all()
+	queryset = Comment.objects.select_related('author').select_related('announcement').all()
 	
 	serializer_class = CommentSerializer
 
@@ -129,7 +131,7 @@ class CommentViewSet(viewsets.ModelViewSet):
 
 class EnrollmentViewSet(viewsets.ModelViewSet):
 
-	queryset = Enrollment.objects.all()
+	queryset = Enrollment.objects.select_related('course').select_related('student').all()
 
 	serializer_class = EnrollmentSerializer
 
@@ -170,6 +172,6 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
 	list users or get a user account
 	"""
 
-	queryset = User.objects.all()
+	queryset = User.objects.prefetch_related('my_courses').prefetch_related('enrolled_courses').all()
 	
 	serializer_class = UserSerializer
