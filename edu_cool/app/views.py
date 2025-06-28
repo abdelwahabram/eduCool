@@ -56,13 +56,13 @@ class AnnouncementViewSet(viewsets.ModelViewSet):
 		of a specific course in case of list operation
 		"""
 
-		course_id = self.kwargs.get("course_pk")
+		pk = self.kwargs.get("pk")
 
-		if course_id is None:
+		if pk is None:
 			return self.queryset
 
 		try:
-			course = Course.objects.get(id=course_id)
+			course = Course.objects.get(id=pk)
 		
 		except Course.DoesNotExist:
 			raise NotFound('404 class not found')
@@ -75,10 +75,10 @@ class AnnouncementViewSet(viewsets.ModelViewSet):
 		Description: override the original method to save the course where the announcement was poasted
 		"""
 
-		course_id = self.kwargs.get("course_pk")
+		pk = self.kwargs.get("pk")
 
 		try:
-			course = Course.objects.get(id=course_id)
+			course = Course.objects.get(id=pk)
 		
 		except Course.DoesNotExist:
 			raise NotFound('404 class not found')
@@ -99,13 +99,13 @@ class CommentViewSet(viewsets.ModelViewSet):
 		of a given announcement in case of list operation
 		"""
 
-		announcement_id = self.kwargs.get("announcement_pk")
+		pk = self.kwargs.get("pk")
 
-		if announcement_id is None:
+		if pk is None:
 			return self.queryset
 
 		try:
-			announcement = Announcement.objects.get(id=announcement_id)
+			announcement = Announcement.objects.get(id=pk)
 		
 		except Announcement.DoesNotExist:
 			raise NotFound('404 announcement not found')
@@ -118,10 +118,10 @@ class CommentViewSet(viewsets.ModelViewSet):
 		Description: override the original method to save the parent announcement of the comment
 		"""
 
-		announcement_id = self.kwargs.get("announcement_pk")
+		pk = self.kwargs.get("pk")
 
 		try:
-			announcement = Announcement.objects.get(id=announcement_id)
+			announcement = Announcement.objects.get(id=pk)
 		
 		except Announcement.DoesNotExist:
 			raise NotFound('404 announcement not found')
@@ -138,10 +138,10 @@ class EnrollmentViewSet(viewsets.ModelViewSet):
 
 	def perform_create(self, serializer):
 
-		course_id = self.kwargs.get('course_pk')
+		pk = self.kwargs.get('pk')
 
 		try:
-			course = Course.objects.get(id=course_id)
+			course = Course.objects.get(id=pk)
 
 		except Course.DoesNotExist:
 			raise NotFound('404: course not found')
@@ -156,10 +156,10 @@ class EnrollmentViewSet(viewsets.ModelViewSet):
 		of a given course id in case of list operation
 		"""
 
-		course_id = self.kwargs.get("course_pk")
+		ok = self.kwargs.get("pk")
 
 		try:
-			course = Course.objects.get(id=course_id)
+			course = Course.objects.get(id=pk)
 		
 		except Course.DoesNotExist:
 			raise NotFound('404 class not found')
