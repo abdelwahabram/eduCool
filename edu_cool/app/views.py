@@ -14,8 +14,6 @@ from rest_framework.exceptions import NotFound
 
 from rest_framework.response import Response
 
-# Create your views here.
-
 
 class CourseViewSet(viewsets.ModelViewSet):
 	"""
