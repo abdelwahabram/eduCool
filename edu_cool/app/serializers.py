@@ -7,7 +7,7 @@ from rest_framework import serializers
 
 class CourseSerializer(serializers.HyperlinkedModelSerializer):
 
-	tutor = serializers.HyperlinkedIdentityField(read_only=True, view_name='user-detail')
+	tutor = serializers.HyperlinkedRelatedField(read_only=True, view_name='user-detail')
 
 	announcements = serializers.HyperlinkedIdentityField(read_only=True, view_name='announcement-list')
 	
@@ -22,9 +22,9 @@ class CourseSerializer(serializers.HyperlinkedModelSerializer):
 
 class EnrollmentSerializer(serializers.HyperlinkedModelSerializer):
 
-	course = serializers.HyperlinkedIdentityField(read_only=True, view_name='course-detail')
+	course = serializers.HyperlinkedRelatedField(read_only=True, view_name='course-detail')
 
-	student = serializers.HyperlinkedIdentityField(read_only=True, view_name='user-detail')
+	student = serializers.HyperlinkedRelatedField(read_only=True, view_name='user-detail')
 	
 	class Meta():
 
@@ -35,7 +35,7 @@ class EnrollmentSerializer(serializers.HyperlinkedModelSerializer):
 
 class AnnouncementSerializer(serializers.HyperlinkedModelSerializer):
     
-	course = serializers.HyperlinkedIdentityField(read_only=True, view_name='course-detail')
+	course = serializers.HyperlinkedRelatedField(read_only=True, view_name='course-detail')
 
 	comments = serializers.HyperlinkedIdentityField(read_only=True, view_name='comment-list')
 
@@ -46,9 +46,9 @@ class AnnouncementSerializer(serializers.HyperlinkedModelSerializer):
 
 class CommentSerializer(serializers.HyperlinkedModelSerializer):
 	
-	author = serializers.HyperlinkedIdentityField(read_only=True, view_name='user-detail')
+	author = serializers.HyperlinkedRelatedField(read_only=True, view_name='user-detail')
 	
-	announcement = serializers.HyperlinkedIdentityField(read_only=True, view_name='announcement-detail')
+	announcement = serializers.HyperlinkedRelatedField(read_only=True, view_name='announcement-detail')
 	
 	class Meta(object):
 		
