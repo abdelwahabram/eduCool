@@ -48,6 +48,13 @@ class AnnouncementViewSet(viewsets.ModelViewSet):
 	serializer_class = AnnouncementSerializer
 
 
+	def get_object(self, *args, **kwargs):
+
+		pk = self.kwargs.get("pk")
+
+		return Announcement.objects.get(pk=pk)
+
+
 	def get_queryset(self, *args, **kwargs):
 		"""
 		Description: override the original method to filter the announcements
@@ -55,9 +62,6 @@ class AnnouncementViewSet(viewsets.ModelViewSet):
 		"""
 
 		pk = self.kwargs.get("pk")
-
-		if pk is None:
-			return self.queryset
 
 		try:
 			course = Course.objects.get(id=pk)
@@ -91,6 +95,13 @@ class CommentViewSet(viewsets.ModelViewSet):
 	serializer_class = CommentSerializer
 
 
+	def get_object(self, *args, **kwargs):
+
+		pk = self.kwargs.get("pk")
+
+		return Comment.objects.get(pk=pk)
+
+
 	def get_queryset(self, *args, **kwargs):
 		"""
 		Description: override the original method to filter the comments
@@ -98,9 +109,6 @@ class CommentViewSet(viewsets.ModelViewSet):
 		"""
 
 		pk = self.kwargs.get("pk")
-
-		if pk is None:
-			return self.queryset
 
 		try:
 			announcement = Announcement.objects.get(id=pk)
