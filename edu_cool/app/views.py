@@ -162,7 +162,7 @@ class EnrollmentViewSet(viewsets.ModelViewSet):
 		of a given course id in case of list operation
 		"""
 
-		ok = self.kwargs.get("pk")
+		pk = self.kwargs.get("pk")
 
 		try:
 			course = Course.objects.get(id=pk)
