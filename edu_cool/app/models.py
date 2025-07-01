@@ -1,5 +1,6 @@
 from django.db import models
 
+import datetime
 
 def get_course_attachments_dir(instance, filename):
 	
@@ -10,7 +11,9 @@ def get_course_attachments_dir(instance, filename):
 		filename=> the uploaded file name
 	"""
 
-	return "attachments/{instance.title}/%Y/%m/%d/{filename}"
+	now = datetime.datetime.now()
+
+	return f"attachments/{instance.course.title}/{now.strftime('%Y')}/{now.strftime('%m')}/{now.strftime('%d')}/{filename}"
 
 
 class Course(models.Model):
