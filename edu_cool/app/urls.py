@@ -1,5 +1,9 @@
 from django.urls import path, include, re_path
 
+from django.conf.urls.static import static
+
+from django.conf import settings
+
 from app import views
 
 from rest_framework.routers import DefaultRouter
@@ -18,7 +22,7 @@ urlpatterns = [
     
     re_path(r'^courses/(?P<pk>\d+)/students/?$', views.EnrollmentViewSet.as_view({'get': 'list'}), name='student-list'),
     
-    re_path(r'^courses/(?P<pk>\d+)/enrollment/?$', views.EnrollmentViewSet.as_view({'post': 'create'}), name='ennroll'),
+    re_path(r'^courses/(?P<pk>\d+)/enrollment/?$', views.EnrollmentViewSet.as_view({'post': 'create'}), name='enroll'),
 
     re_path(r'^announcements/(?P<pk>\d+)/comments/?$', views.CommentViewSet.as_view({'get': 'list', 'post': 'create'}), name='comment-list'),
     
@@ -27,3 +31,8 @@ urlpatterns = [
     path('', include(main_router.urls)),
 
 ]
+
+urlpatterns += static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)
+
+# NOTE: ALL THE MEDIA STORED IN THE SERVER ARE PUBLICLY AVAILABLE,
+# SO WE NEED TO FIND A WAY TORESTRICT THIS FOR EACH CLASS MEMBER
