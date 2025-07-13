@@ -6,13 +6,17 @@ from app.models import Course, Enrollment, Announcement, Comment
 
 from app.serializers import CourseSerializer, EnrollmentSerializer, AnnouncementSerializer, UserSerializer, CommentSerializer
 
+from app import permissions
+
 from rest_framework import viewsets
 
 from rest_framework.decorators import action
 
-from rest_framework.exceptions import NotFound
+from rest_framework.exceptions import NotFound, PermissionDenied
 
 from rest_framework.response import Response
+
+from rest_framework.permissions import IsAuthenticated
 
 
 class CourseViewSet(viewsets.ModelViewSet):
