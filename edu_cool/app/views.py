@@ -30,6 +30,22 @@ class CourseViewSet(viewsets.ModelViewSet):
 	queryset = Course.objects.select_related('tutor').all()
 
 	serializer_class = CourseSerializer
+	
+	# ret auth
+	# post auth
+	# put tutor
+	# list auth
+
+
+	def get_permissions(self):
+
+		if self.action == 'update':
+			permission_classes = [permissions.IsTutor]
+		
+		else:
+			permission_classes = [IsAuthenticated]
+
+		return [permission() for permission in permission_classes]
 
 
 	def perform_create(self, serializer):
@@ -50,6 +66,21 @@ class AnnouncementViewSet(viewsets.ModelViewSet):
 	queryset = Announcement.objects.select_related('course').all()
 
 	serializer_class = AnnouncementSerializer
+
+	# ret member
+	# list member
+	# post, put tutor
+
+
+	def get_permissions(self):
+		
+		if self.action == 'list' or self.action == 'retrieve':
+			permission_classes = [permissions.IsTutorAnnouncement | permissions.IsStudent]
+		
+		elif self.action == 'update':
+			permission_classes = [permissions.IsTutorAnnouncement]
+
+		return [permission() for permission in permission_classes]
 
 
 	def get_object(self, *args, **kwargs):
@@ -97,6 +128,19 @@ class CommentViewSet(viewsets.ModelViewSet):
 	queryset = Comment.objects.select_related('author').select_related('announcement').all()
 	
 	serializer_class = CommentSerializer
+	
+	# post, get, list => member
+	# put => author
+
+	def get_permissions(self):
+
+		if self.action == 'update':
+			permission_classes = [permissions.IsCommentAuthor]
+		
+		else:
+			permission_classes = [permissions.IsMember]
+
+		return [permission() for permission in permission_classes]
 
 
 	def get_object(self, *args, **kwargs):
@@ -145,6 +189,17 @@ class EnrollmentViewSet(viewsets.ModelViewSet):
 
 	serializer_class = EnrollmentSerializer
 
+	# post => not student, not tutor=> DONE
+	# list => tutor
+	# get => stud, tutor
+
+	def get_permissions(self):
+
+		if self.action == 'retrieve':
+			permission_classes = [permissions.IsEnrollmentTutor | permissions.IsEnrollmentStudent]
+
+		if self.action == 'list':
+			permission_classes = [permissions.IsEnrollmentTutor]
 
 	def perform_create(self, serializer):
 
@@ -185,3 +240,5 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
 	queryset = User.objects.prefetch_related('my_courses').prefetch_related('enrolled_courses').all()
 	
 	serializer_class = UserSerializer
+
+	permission_classes = [permissions.IsUserSession]
