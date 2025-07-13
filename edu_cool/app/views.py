@@ -120,6 +120,9 @@ class AnnouncementViewSet(viewsets.ModelViewSet):
 		except Course.DoesNotExist:
 			raise NotFound('404 class not found')
 
+		if self.request.user != course.tutor:
+			raise PermissionDenied('only tutor can post to the group')
+
 		return serializer.save(course=course)
 
 
@@ -180,6 +183,9 @@ class CommentViewSet(viewsets.ModelViewSet):
 		except Announcement.DoesNotExist:
 			raise NotFound('404 announcement not found')
 
+		if self.request.user != announcement.course.tutor or not announcement.course.students.objects.filter(id = self.request.user.id).exists():
+			raise PermissionDenied('only course members can comment')
+
 		return serializer.save(announcement=announcement, author = self.request.user)
 
 
@@ -210,6 +216,14 @@ class EnrollmentViewSet(viewsets.ModelViewSet):
 
 		except Course.DoesNotExist:
 			raise NotFound('404: course not found')
+
+		if course.tutor == self.request.user:
+			raise PermissionDenied('A tutor can\'t be student')
+
+		if course.students.objects.filter(id = self.request.user.id):
+			raise PermissionDenied('already joined')
+			
+			# NOTE: A better way to handle this is to update the model making student and course unique together
 
 		return serializer.save(course = course, student=self.request.user)
 
