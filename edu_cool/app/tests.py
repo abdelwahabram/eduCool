@@ -96,3 +96,144 @@ class TestUserAuthentication(APITestCase):
 		pass
 
 
+class TestCourseViews(APITestCase):
+
+	def test_create_course_auth(self):
+		pass
+
+
+	def test_create_course_anonymous(self):
+		pass
+
+
+	def test_update_course(self):
+		pass
+
+
+	def test_update_course_non_tutor(self):
+		pass
+
+
+	def test_retrieve_course(self):
+		pass
+
+
+	def test_list_courses(self):
+		pass
+
+
+class TestAnnouncementViews(APITestCase):
+	
+	def setUp(self):
+		pass
+
+
+	def test_create_announcement(self):
+		pass
+
+
+	def test_student_create_announcement(self):
+		pass
+
+
+	def test_non_members_create_announcement(self):
+		pass
+
+	def test_update_announcement(self):
+		pass
+
+
+	def test_student_update_announcement(self):
+		pass
+
+
+	def test_non_members_update_announcement(self):
+		pass
+
+
+	def test_retrieve_announcement(self):
+		pass
+
+
+	def test_non_member_retrieve_announcement(self):
+		pass
+
+	
+	def test_list_announcements(self):
+		pass
+
+	
+	def test_non_member_list_announcements(self):
+		pass
+
+
+class TestCommentViews(APITestCase):
+
+	def setUp(self):
+		pass
+
+
+	def test_create_comment(self):
+		pass
+
+
+	def test_non_member_create_comment(self):
+		pass
+
+
+	def test_update_comment(self):
+		pass
+
+
+	def test_non_author_update_comment(self):
+		pass
+
+
+	def test_retrieve_comment(self):
+		pass
+
+
+	def test_non_member_retrieve_comment(self):
+		pass
+
+
+	def test_list_comments(self):
+		pass
+
+
+	def test_non_member_list_comments(self):
+		pass
+
+
+class TestEnrollmentViews(APITestCase):
+
+	def setUp(self):
+		pass
+
+
+	def test_enrollment(self):
+		pass
+
+
+	def test_tutor_enrollment(self):
+		pass
+
+
+	def test_current_student_enrollment(self):
+		pass
+
+
+	def test_retrieve_comment(self):
+		pass
+
+
+	def test_non_member_retrieve_enrollment(self):
+		pass
+
+
+	def test_list_enrollment(self):
+		pass
+
+
+	def test_non_tutor_list_enrollment(self):
+		pass
