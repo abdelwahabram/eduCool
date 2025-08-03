@@ -86,17 +86,13 @@ class TestUserAuthentication(APITestCase):
 
 
 	def test_jwt_token(self):
-		# print(self.user.is_active)
-		# print(User.objects.count())
 
 		url = '/auth/jwt/create'
 
 		data = {'username': 'user1', 'password': '$$ATYQW#9ER&TY123456'}
-#												  # $$ATYQW#9ER&TY123456
 
 		response = self.client.post(url, data)
-		# print(response.data)
-		# print(response.content)
+
 		self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
