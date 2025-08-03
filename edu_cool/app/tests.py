@@ -6,6 +6,8 @@ from rest_framework.test import APITestCase
 
 from rest_framework import status
 
+from app.models import Course, Enrollment, Announcement, Comment
+
 # Create your tests here.
 
 # 1) start with the main scenario
