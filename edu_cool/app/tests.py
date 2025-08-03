@@ -104,29 +104,168 @@ class TestUserAuthentication(APITestCase):
 
 
 class TestCourseViews(APITestCase):
+	def setUp(self):
+		# course, tutor, studemt, non  member
+
+		self.tutor = User.objects.create(username='tutor', password='$$ATYQW#9ER&TY123456', email='user1@educool.com')
+		
+		self.course = Course.objects.create(tutor = self.tutor, title = 'course101')
+
+		self.student = User.objects.create(username='student', password='$$ATYQW#9ER&TY123456', email='user1@educool.com')
+
+		# self.student.enrolled_courses.add(self.course)
+
+		self.enrollment = Enrollment.objects.create(course = self.course, student = self.student)
+
+		self.non_member = User.objects.create(username='randomuser', password='$$ATYQW#9ER&TY123456', email='user1@educool.com')
+	
 
 	def test_create_course_auth(self):
-		pass
+
+		url = '/courses/'
+
+		""" got a bug here because when you hit 'www.123.com/courses'
+		for example you get redirected to the 'www.123.com/courses/' 
+		without noticing it in the browser, 
+		some how I've fallen for that before but forgot it"""
+
+		data = {'title': 'robbing banks 101'}
+
+		self.client.force_authenticate(user = self.tutor)
+
+		response = self.client.post(url, data)
+
+		self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
 
 	def test_create_course_anonymous(self):
-		pass
+		url = '/courses/'
+
+		data = {'title': 'robbing banks 101'}
+
+		# self.client.force_authenticate(user = self.tutor)
+
+		response = self.client.post(url, data)
+
+		self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
 
 	def test_update_course(self):
-		pass
+		
+		id = self.course.id
+
+		url = f'/courses/{id}/'
+
+		data = {'title': 'course102'}
+
+		self.client.force_authenticate(user = self.tutor)
+
+		response = self.client.put(url, data)
+
+		# print(response.content)
+		
+		self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
 	def test_update_course_non_tutor(self):
-		pass
+		id = self.course.id
+
+		url = f'/courses/{id}/'
+
+		data = {'title': 'course102'}
+
+		self.client.force_authenticate(user = self.student)
+
+		response = self.client.put(url, data)
+
+		self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+		
+
+		self.client.force_authenticate(user = self.non_member)
+
+		response = self.client.put(url, data)
+
+		self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+
+		self.client.force_authenticate(user = None)
+
+		response = self.client.put(url, data)
+
+		self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
 
 	def test_retrieve_course(self):
-		pass
+
+		id = self.course.id
+
+		url = f'/courses/{id}/'
+
+		self.client.force_authenticate(user = self.tutor)
+
+		response = self.client.get(url)
+
+		self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
+		self.client.force_authenticate(user = self.student)
+		
+		response = self.client.get(url)
+
+		self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
+		self.client.force_authenticate(user = self.non_member)
+		
+		response = self.client.get(url)
+
+		self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
+	def test_retrieve_course_anonymous(self):
+
+		id = self.course.id
+
+		url = f'/courses/{id}/'
+
+		response = self.client.get(url)
+
+		self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
 
 	def test_list_courses(self):
-		pass
+		url = '/courses/'
+
+		self.client.force_authenticate(user = self.tutor)
+
+		response = self.client.get(url)
+
+		self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
+		self.client.force_authenticate(user = self.student)
+
+		response = self.client.get(url)
+
+		self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
+		self.client.force_authenticate(user = self.non_member)
+
+		response = self.client.get(url)
+
+		self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+		# they should be separated in a single tc for each one ig
+
+
+	def test_list_courses_anonymous(self):
+
+		url = '/courses/'
+
+		response = self.client.get(url)
+		
+		self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
 
 class TestAnnouncementViews(APITestCase):
