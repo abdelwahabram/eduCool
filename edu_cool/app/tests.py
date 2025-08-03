@@ -56,8 +56,13 @@ class TestUserRegistration(APITestCase):
 class TestUserAuthentication(APITestCase):
 
 	def setUp(self):
+		
 		self.user = User.objects.create(username='user1', password='$$ATYQW#9ER&TY123456', email='user1@educool.com')
 
+		self.user.set_password('$$ATYQW#9ER&TY123456')
+		
+		self.user.save()
+	
 	# no need for thos after separating user auth and user registeration tests
 	# def test_register_user(self):
 
@@ -81,13 +86,17 @@ class TestUserAuthentication(APITestCase):
 
 
 	def test_jwt_token(self):
+		# print(self.user.is_active)
+		# print(User.objects.count())
 
 		url = '/auth/jwt/create'
 
 		data = {'username': 'user1', 'password': '$$ATYQW#9ER&TY123456'}
+#												  # $$ATYQW#9ER&TY123456
 
 		response = self.client.post(url, data)
-
+		# print(response.data)
+		# print(response.content)
 		self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
