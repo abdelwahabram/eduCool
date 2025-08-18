@@ -8,6 +8,8 @@ from rest_framework import status
 
 from app.models import Course, Enrollment, Announcement, Comment
 
+from unittest import skip
+
 # Create your tests here.
 
 # 1) start with the main scenario
@@ -338,16 +340,93 @@ class TestAnnouncementViews(APITestCase):
 		self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
 
+	@skip('api not built')
 	def test_update_announcement(self):
-		pass
+		
+		id = self.announcement.id
+
+		url = f'/announcements/{id}/'
+
+		new_title = 'new annoncemnt22222'
+
+		new_content = 'welcome2222'
+
+		data = {'title': new_title, 'content': new_content}
+
+		self.client.force_authenticate(user = self.tutor)
+
+		response = self.client.put(url, data)
+
+		self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+		self.assertEqual(self.announcement.title, new_title)
+
+		self.assertEqual(self.announcement.content, new_content)
 
 
+	@skip('api not built')
 	def test_student_update_announcement(self):
-		pass
+		
+		id = self.announcement.id
+
+		url = f'/announcements/{id}/'
+
+		old_title = self.announcement.title
+
+		old_content = self.announcement.content
+
+		new_title = 'new annoncemnt22222'
+
+		new_content = 'welcome2222'
+
+		data = {'title': new_title, 'content': new_content}
+
+		self.client.force_authenticate(user = self.student)
+
+		response = self.client.put(url, data)
+
+		self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+		self.assertEqual(self.announcement.title, old_title)
+
+		self.assertEqual(self.announcement.content, old_content)
 
 
+	@skip('api not built')
 	def test_non_members_update_announcement(self):
-		pass
+		
+		id = self.announcement.id
+
+		url = f'/announcements/{id}/'
+
+		old_title = self.announcement.title
+
+		old_content = self.announcement.content
+
+		new_title = 'new annoncemnt22222'
+
+		new_content = 'welcome2222'
+
+		data = {'title': new_title, 'content': new_content}
+
+		response = self.client.put(url, data)
+
+		self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+		self.assertEqual(self.announcement.title, old_title)
+
+		self.assertEqual(self.announcement.content, old_content)
+
+
+		self.client.force_authenticate(user = self.non_member)
+
+		response = self.client.put(url, data)
+
+		self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+		self.assertEqual(self.announcement.title, old_title)
+
+		self.assertEqual(self.announcement.content, old_content)
 
 
 	def test_retrieve_announcement(self):
