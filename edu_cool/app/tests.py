@@ -430,11 +430,50 @@ class TestAnnouncementViews(APITestCase):
 
 
 	def test_retrieve_announcement(self):
-		pass
+
+		id = self.announcement.id
+
+		url = f'/announcements/{id}/'
+
+		self.client.force_authenticate(user = self.tutor)
+
+		response = self.client.get(url)
+
+		self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
+		self.client.force_authenticate(user = self.student)
+		# print('idx:')
+		# print(self.student.id)
+		# print(self.announcement.course.students.first().id)
+		# print('here: ***',self.announcement.course.students.filter(student = self.student))
+		response = self.client.get(url)
+
+		self.assertEqual(response.status_code, status.HTTP_200_OK)		
 
 
 	def test_non_member_retrieve_announcement(self):
-		pass
+
+		id = self.announcement.id
+
+		url = f'/announcements/{id}/'
+
+		self.client.force_authenticate(user = self.non_member)
+
+		response = self.client.get(url)
+
+		# print('hereeee:*****', self.announcement.course.students.filter(id = self.non_member.id).exists())
+		# print(response.data)
+		# # print(response.body)
+
+		self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+
+		self.client.force_authenticate(user = None)
+
+		response = self.client.get(url)
+
+		self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)	
 
 	
 	def test_list_announcements(self):
