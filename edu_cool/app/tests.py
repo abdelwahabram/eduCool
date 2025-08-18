@@ -271,7 +271,19 @@ class TestCourseViews(APITestCase):
 class TestAnnouncementViews(APITestCase):
 	
 	def setUp(self):
-		pass
+		# announcement, course, tutor, student, non mem
+
+		self.tutor = User.objects.create(username = 'tutor', password = 'th!s!sMyP@$$Wordd#16', email = 'tutor@educool.com')
+		
+		self.course = Course.objects.create(title = 'course101', tutor = self.tutor)
+
+		self.student = User.objects.create(username = 'student', password = 'th!s!sMyP@$$Wordd#7795', email = 'student@educool.com')
+
+		self.enrollment = Enrollment.objects.create(course = self.course, student = self.student)
+		
+		self.non_member = User.objects.create(username = 'random', password = 'th!s!sMyP@$$Wordd#777449', email = 'random@educool.com')
+		
+		self.announcement = Announcement.objects.create(course = self.course, title = 'congrats', content = '50 pts 4 ev1')
 
 
 	def test_create_announcement(self):
