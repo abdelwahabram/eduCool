@@ -74,14 +74,19 @@ class AnnouncementViewSet(viewsets.ModelViewSet):
 
 	def get_permissions(self):
 		
-		if self.action == 'list' or self.action == 'retrieve':
-			permission_classes = [permissions.IsTutorAnnouncement | permissions.IsStudent]
-		
-		elif self.action == 'update':
-			permission_classes = [permissions.IsTutorAnnouncement]
-
+		permission_classes = [IsAuthenticated & (permissions.IsTutorAnnouncement | permissions.IsStudent)]
+		# # print(7777777777777)
+		# if self.action == 'list' or self.action == 'retrieve':
+		# 	permission_classes = [permissions.IsTutorAnnouncement | permissions.IsStudent]
+		# 	# print(8888888888888888888888)
+		# elif self.action == 'update':
+		# 	permission_classes = [permissions.IsTutorAnnouncement]
+		# # print(permission.__str__() for permission() in permission_classes)
 		return [permission() for permission in permission_classes]
 
+		##NOTE: while reviewing the code before commiting noticed we can remove the whole
+		# function and use attribute since we no longer need different 
+		# permissions for different methods
 
 	def get_object(self, *args, **kwargs):
 
