@@ -92,7 +92,12 @@ class AnnouncementViewSet(viewsets.ModelViewSet):
 
 		pk = self.kwargs.get("pk")
 
-		return Announcement.objects.get(pk=pk)
+		announcement = Announcement.objects.get(pk=pk)
+
+		self.check_object_permissions(self.request, announcement)
+		#NOTE: this needs to be applied for other resources
+		
+		return announcement
 
 
 	def get_queryset(self, *args, **kwargs):
