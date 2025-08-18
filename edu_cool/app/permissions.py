@@ -19,22 +19,14 @@ class IsTutorAnnouncement(permissions.BasePermission):
 
 		return True
 
-	# def __str__(self):
-	# 	return 'IsTutorAnnouncement'
-	# useless method was used for debugging
-
 
 class IsStudent(permissions.BasePermission):
 
-	# def __str__(self):
-	# 	return 'IsStudent'
 
 	def has_object_permission(self, request, view, obj):
 
 		if obj.course.students.filter(student=request.user).exists():
-			print('stud exist')
-			print(obj.course.id)
-			print(request.user.id)
+			
 			return True
 
 		return False
