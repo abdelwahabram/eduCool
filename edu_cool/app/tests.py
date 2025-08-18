@@ -287,15 +287,56 @@ class TestAnnouncementViews(APITestCase):
 
 
 	def test_create_announcement(self):
-		pass
+
+		id = self.course.id
+
+		url = f'/courses/{id}/announcements/'
+
+		data = {'title': 'new annoncemnt', 'content': 'welcome'}
+
+		self.client.force_authenticate(user = self.tutor)
+
+		response = self.client.post(url, data)
+
+		self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
 
 	def test_student_create_announcement(self):
-		pass
+		
+		id = self.course.id
+
+		url = f'/courses/{id}/announcements/'
+
+		data = {'title': 'new annoncemnt', 'content': 'welcome'}
+
+		self.client.force_authenticate(user = self.student)
+
+		response = self.client.post(url, data)
+
+		self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
 
 	def test_non_members_create_announcement(self):
-		pass
+		
+		id = self.course.id
+
+		url = f'/courses/{id}/announcements/'
+
+		self.client.force_authenticate(user = None)
+
+		data = {'title': 'new annoncemnt', 'content': 'welcome'}
+
+		response = self.client.post(url, data)
+
+		self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+
+		self.client.force_authenticate(user = self.non_member)
+
+		response = self.client.post(url, data)
+
+		self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
 
 	def test_update_announcement(self):
 		pass
