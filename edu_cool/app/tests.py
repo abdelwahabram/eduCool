@@ -339,7 +339,13 @@ class TestAnnouncementViews(APITestCase):
 
 		self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
+	# NOTE: i think if we aren't gonna support updating anncments,
+	# we should assert that the method isn't allowed, and so with other methods like deleting other resources
+	# we aren't limited to customer requirements or and i didn't document how I imagined the mvp here
+	# i decided to just build something and start it
+	# so it keep changing, this is some sort of hindsight bias i think, np we're learning
 
+	
 	@skip('api not built')
 	def test_update_announcement(self):
 		
