@@ -170,6 +170,7 @@ class TestCourseViews(APITestCase):
 
 
 	def test_update_course_non_tutor(self):
+		
 		id = self.course.id
 
 		url = f'/courses/{id}/'
@@ -273,7 +274,6 @@ class TestCourseViews(APITestCase):
 class TestAnnouncementViews(APITestCase):
 	
 	def setUp(self):
-		# announcement, course, tutor, student, non mem
 
 		self.tutor = User.objects.create(username = 'tutor', password = 'th!s!sMyP@$$Wordd#16', email = 'tutor@educool.com')
 		
@@ -324,7 +324,20 @@ class TestAnnouncementViews(APITestCase):
 
 		url = f'/courses/{id}/announcements/'
 
-		self.client.force_authenticate(user = None)
+		data = {'title': 'new annoncemnt', 'content': 'welcome'}
+
+		self.client.force_authenticate(user = self.non_member)
+
+		response = self.client.post(url, data)
+
+		self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+
+	def test_anonymous_create_announcement(self):
+
+		id = self.course.id
+
+		url = f'/courses/{id}/announcements/'
 
 		data = {'title': 'new annoncemnt', 'content': 'welcome'}
 
@@ -332,12 +345,6 @@ class TestAnnouncementViews(APITestCase):
 
 		self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-
-		self.client.force_authenticate(user = self.non_member)
-
-		response = self.client.post(url, data)
-
-		self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
 	# NOTE: i think if we aren't gonna support updating anncments,
 	# we should assert that the method isn't allowed, and so with other methods like deleting other resources
@@ -448,11 +455,14 @@ class TestAnnouncementViews(APITestCase):
 		self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
+	def test_student_retrieve_announcement(self):
+		
+		id = self.announcement.id
+
+		url = f'/announcements/{id}/'
+		
 		self.client.force_authenticate(user = self.student)
-		# print('idx:')
-		# print(self.student.id)
-		# print(self.announcement.course.students.first().id)
-		# print('here: ***',self.announcement.course.students.filter(student = self.student))
+		
 		response = self.client.get(url)
 
 		self.assertEqual(response.status_code, status.HTTP_200_OK)		
@@ -468,14 +478,14 @@ class TestAnnouncementViews(APITestCase):
 
 		response = self.client.get(url)
 
-		# print('hereeee:*****', self.announcement.course.students.filter(id = self.non_member.id).exists())
-		# print(response.data)
-		# # print(response.body)
-
 		self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
 
-		self.client.force_authenticate(user = None)
+	def test_anonymous_retrieve_announcement(self):
+
+		id = self.announcement.id
+
+		url = f'/announcements/{id}/'
 
 		response = self.client.get(url)
 
@@ -483,11 +493,53 @@ class TestAnnouncementViews(APITestCase):
 
 	
 	def test_list_announcements(self):
-		pass
+		
+		id = self.course.id
 
+		url = f'/courses/{id}/announcements/'
+
+		self.client.force_authenticate(user = self.tutor)
+
+		response = self.client.get(url)
+
+		self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
+	def test_student_list_announcements(self):
+
+		id = self.course.id
+
+		url = f'/courses/{id}/announcements/'
+
+		self.client.force_authenticate(user = self.student)
+
+		response = self.client.get(url)
+
+		self.assertEqual(response.status_code, status.HTTP_200_OK)
 	
+
 	def test_non_member_list_announcements(self):
-		pass
+		
+		id = self.course.id
+
+		url = f'/courses/{id}/announcements/'
+
+		self.client.force_authenticate(user = self.non_member)
+
+		response = self.client.get(url)
+
+		self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+
+	def test_anonymous_list_announcements(self):
+		
+		id = self.course.id
+
+		url = f'/courses/{id}/announcements/'
+
+		response = self.client.get(url)
+
+		self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
 
 class TestCommentViews(APITestCase):
