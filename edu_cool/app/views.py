@@ -67,26 +67,7 @@ class AnnouncementViewSet(viewsets.ModelViewSet):
 
 	serializer_class = AnnouncementSerializer
 
-	# ret member
-	# list member
-	# post, put tutor
-
-
-	def get_permissions(self):
-		
-		permission_classes = [IsAuthenticated & (permissions.IsTutorAnnouncement | permissions.IsStudent)]
-		# # print(7777777777777)
-		# if self.action == 'list' or self.action == 'retrieve':
-		# 	permission_classes = [permissions.IsTutorAnnouncement | permissions.IsStudent]
-		# 	# print(8888888888888888888888)
-		# elif self.action == 'update':
-		# 	permission_classes = [permissions.IsTutorAnnouncement]
-		# # print(permission.__str__() for permission() in permission_classes)
-		return [permission() for permission in permission_classes]
-
-		##NOTE: while reviewing the code before commiting noticed we can remove the whole
-		# function and use attribute since we no longer need different 
-		# permissions for different methods
+	permission_classes = [IsAuthenticated & (permissions.IsTutorAnnouncement | permissions.IsStudent)]
 
 	def get_object(self, *args, **kwargs):
 
