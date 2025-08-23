@@ -95,6 +95,9 @@ class AnnouncementViewSet(viewsets.ModelViewSet):
 		except Course.DoesNotExist:
 			raise NotFound('404 class not found')
 
+		if self.request.user != course.tutor and not self.request.user.enrolled_courses.filter(course=course).exists():
+			raise PermissionDenied('only course members can view announcements')
+
 		return self.queryset.filter(course=course)
 
 
