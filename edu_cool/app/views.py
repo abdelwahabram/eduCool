@@ -144,7 +144,11 @@ class CommentViewSet(viewsets.ModelViewSet):
 
 		pk = self.kwargs.get("pk")
 
-		return Comment.objects.get(pk=pk)
+		comment =  Comment.objects.get(pk=pk)
+
+		self.check_object_permissions(self.request, comment)
+
+		return comment
 
 
 	def get_queryset(self, *args, **kwargs):
@@ -160,6 +164,9 @@ class CommentViewSet(viewsets.ModelViewSet):
 		
 		except Announcement.DoesNotExist:
 			raise NotFound('404 announcement not found')
+
+		if self.request.user != announcement.course.tutor and not self.request.user.enrolled_courses.filter(course = announcement.course).exists():
+			raise PermissionDenied('only course members can view comments')
 
 		return self.queryset.filter(announcement=announcement)
 
