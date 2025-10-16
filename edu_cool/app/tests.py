@@ -610,10 +610,19 @@ class TestCommentViews(APITestCase):
 		self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
 
+	@skip('api not supported yet')
 	def test_update_comment(self):
 		pass
+	# after several meetings with the CEO and our dev team(yes, it's still just me soloing this project, at least for now)
+	# we came to agreement to limit updating resources like comments and announcements to remind our users that the 'internet is written in ink'
+	# so they act accordingly, as we take our community standards very seriously for the sake of safety and healthiness of the community and our end users
+	# in the next versions we might allow these methods with keeping a history of the updates, might also post a poll for our users to indicate their most wanted features
+	# we also considered adding a feature to report a comment to the tutors, admins if it violates our community standards,
+	# if so, this would have serious consequences including but not limited to having a nice journey to azkaban
+	# have a nice...wait but what's our comm standards???! TBD
 
 
+	@skip('api not supported yet')
 	def test_non_author_update_comment(self):
 		pass
 
