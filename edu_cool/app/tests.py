@@ -545,15 +545,69 @@ class TestAnnouncementViews(APITestCase):
 class TestCommentViews(APITestCase):
 
 	def setUp(self):
-		pass
+		# tutor, std, non mem
+		# class ,announcement, cmnt
+
+		self.tutor = User.objects.create(username = 'mr john doe', password = 'th!s!sMyP@$$Wordd#16', email = 'johndoe@educool.com')
+		
+		self.course = Course.objects.create(title = 'loremipsum 101', tutor = self.tutor)
+
+		self.student = User.objects.create(username = 'stdnt john doe', password = 'th!s!sMyP@$$Wordd#7795', email = 'student@educool.com')
+
+		self.enrollment = Enrollment.objects.create(course = self.course, student = self.student)
+		
+		self.non_member = User.objects.create(username = 'random', password = 'th!s!sMyP@$$Wordd#777449', email = 'random@educool.com')
+		
+		self.announcement = Announcement.objects.create(course = self.course, title = 'loremipsum', content = 'loremipsum loremipsum loremipsum')
+		
+		self.tutor_comment = Comment.objects.create(author = self.tutor, announcement = self.announcement, content = 'loremipsum1 loremipsum1')
+
+		self.student_comment = Comment.objects.create(author = self.student, announcement = self.announcement, content = 'loremipsum2 loremipsum2 loremipsum2')
 
 
 	def test_create_comment(self):
-		pass
+
+		id = self.announcement.id
+		
+		url = f'/announcements/{id}/comments/'
+
+		data = {'content': 'new comment'}
+
+		self.client.force_authenticate(user = self.tutor)
+
+		response = self.client.post(url, data)
+
+		self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+
+	def test_student_create_comment(self):
+
+		id = self.announcement.id
+		
+		url = f'/announcements/{id}/comments/'
+
+		data = {'content': 'new comment'}
+
+		self.client.force_authenticate(user = self.student)
+
+		response = self.client.post(url, data)
+
+		self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
 
 	def test_non_member_create_comment(self):
-		pass
+
+		id = self.announcement.id
+		
+		url = f'/announcements/{id}/comments/'
+
+		data = {'content': 'new comment'}
+
+		self.client.force_authenticate(user = self.non_member)
+
+		response = self.client.post(url, data)
+
+		self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
 
 	def test_update_comment(self):
@@ -565,19 +619,107 @@ class TestCommentViews(APITestCase):
 
 
 	def test_retrieve_comment(self):
-		pass
+		
+		id = self.tutor_comment.id
+
+		url = f'/comments/{id}/'
+
+		self.client.force_authenticate(user = self.tutor)
+
+		response = self.client.get(url)
+
+		self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
+	def test_student_retrieve_comment(self):
+		
+		id = self.tutor_comment.id
+
+		url = f'/comments/{id}/'
+
+		self.client.force_authenticate(user = self.student)
+
+		response = self.client.get(url)
+
+		self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
 	def test_non_member_retrieve_comment(self):
-		pass
+
+		id = self.tutor_comment.id
+
+		url = f'/comments/{id}/'
+
+		self.client.force_authenticate(user = self.non_member)
+
+		response = self.client.get(url)
+
+		self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+
+	def test_anonymous_retrieve_comment(self):
+		
+		id = self.tutor_comment.id
+
+		url = f'/comments/{id}/'
+
+		# self.client.force_authenticate(user = )
+
+		response = self.client.get(url)
+
+		self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
 
 	def test_list_comments(self):
-		pass
+
+		id = self.announcement.id
+
+		url = f'/announcements/{id}/comments/'
+
+		self.client.force_authenticate(user = self.tutor)
+
+		response = self.client.get(url)
+
+		self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
+	def test_student_list_comments(self):
+
+		id = self.announcement.id
+
+		url = f'/announcements/{id}/comments/'
+
+		self.client.force_authenticate(user = self.student)
+
+		response = self.client.get(url)
+
+		self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
 	def test_non_member_list_comments(self):
-		pass
+
+		id = self.announcement.id
+
+		url = f'/announcements/{id}/comments/'
+
+		self.client.force_authenticate(user = self.non_member)
+
+		response = self.client.get(url)
+
+		self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+
+	def test_anonymous_list_comments(self):
+
+		id = self.announcement.id
+
+		url = f'/announcements/{id}/comments/'
+
+		# self.client.force_authenticate(user = )
+
+		response = self.client.get(url)
+
+		self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
 
 class TestEnrollmentViews(APITestCase):
