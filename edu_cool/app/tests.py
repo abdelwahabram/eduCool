@@ -14,6 +14,8 @@ from unittest import skip
 
 # 1) start with the main scenario
 # 2) invert and check other cases
+# test cases naming: test_actor[tutor, student, non_member, anonymous]_operation[create, retrieve, update, list]_resource[course, comment, announcement,],
+# if the actor is tutor ommit it so it'd be just: test_operation_resource
 
 class TestUserRegistration(APITestCase):
 
@@ -106,6 +108,7 @@ class TestUserAuthentication(APITestCase):
 
 
 class TestCourseViews(APITestCase):
+
 	def setUp(self):
 		# course, tutor, studemt, non  member
 
@@ -122,7 +125,7 @@ class TestCourseViews(APITestCase):
 		self.non_member = User.objects.create(username='randomuser', password='$$ATYQW#9ER&TY123456', email='user1@educool.com')
 	
 
-	def test_create_course_auth(self):
+	def test_create_course(self):
 
 		url = '/courses/'
 
@@ -140,7 +143,7 @@ class TestCourseViews(APITestCase):
 		self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
 
-	def test_create_course_anonymous(self):
+	def test_anonymous_create_course(self):
 		url = '/courses/'
 
 		data = {'title': 'robbing banks 101'}
@@ -169,7 +172,7 @@ class TestCourseViews(APITestCase):
 		self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
-	def test_update_course_non_tutor(self):
+	def test_student_update_course(self):
 		
 		id = self.course.id
 
@@ -184,6 +187,35 @@ class TestCourseViews(APITestCase):
 		self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 		
 
+		# self.client.force_authenticate(user = self.non_member)
+
+		# response = self.client.put(url, data)
+
+		# self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+
+		# self.client.force_authenticate(user = None)
+
+		# response = self.client.put(url, data)
+
+		# self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+
+	def test_non_member_update_course(self):
+		
+		id = self.course.id
+
+		url = f'/courses/{id}/'
+
+		data = {'title': 'course102'}
+
+		# self.client.force_authenticate(user = self.student)
+
+		# response = self.client.put(url, data)
+
+		# self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+		
+
 		self.client.force_authenticate(user = self.non_member)
 
 		response = self.client.put(url, data)
@@ -191,7 +223,36 @@ class TestCourseViews(APITestCase):
 		self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
 
-		self.client.force_authenticate(user = None)
+		# self.client.force_authenticate(user = None)
+
+		# response = self.client.put(url, data)
+
+		# self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+
+	def test_anonymous_update_course(self):
+		
+		id = self.course.id
+
+		url = f'/courses/{id}/'
+
+		data = {'title': 'course102'}
+
+		# self.client.force_authenticate(user = self.student)
+
+		# response = self.client.put(url, data)
+
+		# self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+		
+
+		# self.client.force_authenticate(user = self.non_member)
+
+		# response = self.client.put(url, data)
+
+		# self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+
+		# self.client.force_authenticate(user = None)
 
 		response = self.client.put(url, data)
 
@@ -211,11 +272,65 @@ class TestCourseViews(APITestCase):
 		self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
+		# self.client.force_authenticate(user = self.student)
+		
+		# response = self.client.get(url)
+
+		# self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
+		# self.client.force_authenticate(user = self.non_member)
+		
+		# response = self.client.get(url)
+
+		# self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
+	def test_student_retrieve_course(self):
+
+		id = self.course.id
+
+		url = f'/courses/{id}/'
+
+		# self.client.force_authenticate(user = self.tutor)
+
+		# response = self.client.get(url)
+
+		# self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
 		self.client.force_authenticate(user = self.student)
 		
 		response = self.client.get(url)
 
 		self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
+		# self.client.force_authenticate(user = self.non_member)
+		
+		# response = self.client.get(url)
+
+		# self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
+	def test_non_member_retrieve_course(self):
+
+		id = self.course.id
+
+		url = f'/courses/{id}/'
+
+		# self.client.force_authenticate(user = self.tutor)
+
+		# response = self.client.get(url)
+
+		# self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
+		# self.client.force_authenticate(user = self.student)
+		
+		# response = self.client.get(url)
+
+		# self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
 		self.client.force_authenticate(user = self.non_member)
@@ -225,7 +340,7 @@ class TestCourseViews(APITestCase):
 		self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
-	def test_retrieve_course_anonymous(self):
+	def test_anonymous_retrieve_course(self):
 
 		id = self.course.id
 
@@ -246,11 +361,64 @@ class TestCourseViews(APITestCase):
 		self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
+		# self.client.force_authenticate(user = self.student)
+
+		# response = self.client.get(url)
+
+		# self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
+		# self.client.force_authenticate(user = self.non_member)
+
+		# response = self.client.get(url)
+
+		# self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+		# # they should be separated in a single tc for each one ig
+
+
+	def test_student_list_courses(self):
+		url = '/courses/'
+
+		# self.client.force_authenticate(user = self.tutor)
+
+		# response = self.client.get(url)
+
+		# self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
 		self.client.force_authenticate(user = self.student)
 
 		response = self.client.get(url)
 
 		self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
+		# self.client.force_authenticate(user = self.non_member)
+
+		# response = self.client.get(url)
+
+		# self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+		# # they should be separated in a single tc for each one ig
+
+
+	def test_non_member_list_courses(self):
+		
+		url = '/courses/'
+
+		# self.client.force_authenticate(user = self.tutor)
+
+		# response = self.client.get(url)
+
+		# self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
+		# self.client.force_authenticate(user = self.student)
+
+		# response = self.client.get(url)
+
+		# self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
 		self.client.force_authenticate(user = self.non_member)
@@ -262,7 +430,7 @@ class TestCourseViews(APITestCase):
 		# they should be separated in a single tc for each one ig
 
 
-	def test_list_courses_anonymous(self):
+	def test_anonymous_list_courses(self):
 
 		url = '/courses/'
 
@@ -318,7 +486,7 @@ class TestAnnouncementViews(APITestCase):
 		self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
 
-	def test_non_members_create_announcement(self):
+	def test_non_member_create_announcement(self):
 		
 		id = self.course.id
 
@@ -406,7 +574,7 @@ class TestAnnouncementViews(APITestCase):
 
 
 	@skip('api not built')
-	def test_non_members_update_announcement(self):
+	def test_non_member_update_announcement(self):
 		
 		id = self.announcement.id
 
