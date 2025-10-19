@@ -110,15 +110,12 @@ class TestUserAuthentication(APITestCase):
 class TestCourseViews(APITestCase):
 
 	def setUp(self):
-		# course, tutor, studemt, non  member
 
 		self.tutor = User.objects.create(username='tutor', password='$$ATYQW#9ER&TY123456', email='user1@educool.com')
 		
 		self.course = Course.objects.create(tutor = self.tutor, title = 'course101')
 
 		self.student = User.objects.create(username='student', password='$$ATYQW#9ER&TY123456', email='user1@educool.com')
-
-		# self.student.enrolled_courses.add(self.course)
 
 		self.enrollment = Enrollment.objects.create(course = self.course, student = self.student)
 
@@ -144,11 +141,10 @@ class TestCourseViews(APITestCase):
 
 
 	def test_anonymous_create_course(self):
+		
 		url = '/courses/'
 
 		data = {'title': 'robbing banks 101'}
-
-		# self.client.force_authenticate(user = self.tutor)
 
 		response = self.client.post(url, data)
 
@@ -166,8 +162,6 @@ class TestCourseViews(APITestCase):
 		self.client.force_authenticate(user = self.tutor)
 
 		response = self.client.put(url, data)
-
-		# print(response.content)
 		
 		self.assertEqual(response.status_code, status.HTTP_200_OK)
 
@@ -185,20 +179,6 @@ class TestCourseViews(APITestCase):
 		response = self.client.put(url, data)
 
 		self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-		
-
-		# self.client.force_authenticate(user = self.non_member)
-
-		# response = self.client.put(url, data)
-
-		# self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-
-
-		# self.client.force_authenticate(user = None)
-
-		# response = self.client.put(url, data)
-
-		# self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
 
 	def test_non_member_update_course(self):
@@ -209,25 +189,11 @@ class TestCourseViews(APITestCase):
 
 		data = {'title': 'course102'}
 
-		# self.client.force_authenticate(user = self.student)
-
-		# response = self.client.put(url, data)
-
-		# self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-		
-
 		self.client.force_authenticate(user = self.non_member)
 
 		response = self.client.put(url, data)
 
 		self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-
-
-		# self.client.force_authenticate(user = None)
-
-		# response = self.client.put(url, data)
-
-		# self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
 
 	def test_anonymous_update_course(self):
@@ -237,22 +203,6 @@ class TestCourseViews(APITestCase):
 		url = f'/courses/{id}/'
 
 		data = {'title': 'course102'}
-
-		# self.client.force_authenticate(user = self.student)
-
-		# response = self.client.put(url, data)
-
-		# self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-		
-
-		# self.client.force_authenticate(user = self.non_member)
-
-		# response = self.client.put(url, data)
-
-		# self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-
-
-		# self.client.force_authenticate(user = None)
 
 		response = self.client.put(url, data)
 
@@ -272,32 +222,11 @@ class TestCourseViews(APITestCase):
 		self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
-		# self.client.force_authenticate(user = self.student)
-		
-		# response = self.client.get(url)
-
-		# self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-
-		# self.client.force_authenticate(user = self.non_member)
-		
-		# response = self.client.get(url)
-
-		# self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-
 	def test_student_retrieve_course(self):
 
 		id = self.course.id
 
 		url = f'/courses/{id}/'
-
-		# self.client.force_authenticate(user = self.tutor)
-
-		# response = self.client.get(url)
-
-		# self.assertEqual(response.status_code, status.HTTP_200_OK)
-
 
 		self.client.force_authenticate(user = self.student)
 		
@@ -306,32 +235,11 @@ class TestCourseViews(APITestCase):
 		self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
-		# self.client.force_authenticate(user = self.non_member)
-		
-		# response = self.client.get(url)
-
-		# self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-
 	def test_non_member_retrieve_course(self):
 
 		id = self.course.id
 
 		url = f'/courses/{id}/'
-
-		# self.client.force_authenticate(user = self.tutor)
-
-		# response = self.client.get(url)
-
-		# self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-
-		# self.client.force_authenticate(user = self.student)
-		
-		# response = self.client.get(url)
-
-		# self.assertEqual(response.status_code, status.HTTP_200_OK)
-
 
 		self.client.force_authenticate(user = self.non_member)
 		
@@ -352,6 +260,7 @@ class TestCourseViews(APITestCase):
 
 
 	def test_list_courses(self):
+		
 		url = '/courses/'
 
 		self.client.force_authenticate(user = self.tutor)
@@ -361,31 +270,9 @@ class TestCourseViews(APITestCase):
 		self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
-		# self.client.force_authenticate(user = self.student)
-
-		# response = self.client.get(url)
-
-		# self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-
-		# self.client.force_authenticate(user = self.non_member)
-
-		# response = self.client.get(url)
-
-		# self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-		# # they should be separated in a single tc for each one ig
-
-
 	def test_student_list_courses(self):
+		
 		url = '/courses/'
-
-		# self.client.force_authenticate(user = self.tutor)
-
-		# response = self.client.get(url)
-
-		# self.assertEqual(response.status_code, status.HTTP_200_OK)
-
 
 		self.client.force_authenticate(user = self.student)
 
@@ -394,40 +281,15 @@ class TestCourseViews(APITestCase):
 		self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
-		# self.client.force_authenticate(user = self.non_member)
-
-		# response = self.client.get(url)
-
-		# self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-		# # they should be separated in a single tc for each one ig
-
-
 	def test_non_member_list_courses(self):
 		
 		url = '/courses/'
-
-		# self.client.force_authenticate(user = self.tutor)
-
-		# response = self.client.get(url)
-
-		# self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-
-		# self.client.force_authenticate(user = self.student)
-
-		# response = self.client.get(url)
-
-		# self.assertEqual(response.status_code, status.HTTP_200_OK)
-
 
 		self.client.force_authenticate(user = self.non_member)
 
 		response = self.client.get(url)
 
 		self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-		# they should be separated in a single tc for each one ig
 
 
 	def test_anonymous_list_courses(self):
@@ -713,24 +575,22 @@ class TestAnnouncementViews(APITestCase):
 class TestCommentViews(APITestCase):
 
 	def setUp(self):
-		# tutor, std, non mem
-		# class ,announcement, cmnt
 
-		self.tutor = User.objects.create(username = 'mr john doe', password = 'th!s!sMyP@$$Wordd#16', email = 'johndoe@educool.com')
+		self.tutor = User.objects.create(username = 'mark hannah', password = 'th!s!sMyP@$$Wordd#16', email = 'johndoe@educool.com')
 		
-		self.course = Course.objects.create(title = 'loremipsum 101', tutor = self.tutor)
+		self.course = Course.objects.create(title = 'Wall street 101', tutor = self.tutor)
 
-		self.student = User.objects.create(username = 'stdnt john doe', password = 'th!s!sMyP@$$Wordd#7795', email = 'student@educool.com')
+		self.student = User.objects.create(username = 'jordan belfort', password = 'th!s!sMyP@$$Wordd#7795', email = 'student@educool.com')
 
 		self.enrollment = Enrollment.objects.create(course = self.course, student = self.student)
 		
-		self.non_member = User.objects.create(username = 'random', password = 'th!s!sMyP@$$Wordd#777449', email = 'random@educool.com')
+		self.non_member = User.objects.create(username = 'non member', password = 'th!s!sMyP@$$Wordd#777449', email = 'random@educool.com')
 		
-		self.announcement = Announcement.objects.create(course = self.course, title = 'loremipsum', content = 'loremipsum loremipsum loremipsum')
+		self.announcement = Announcement.objects.create(course = self.course, title = 'How to succeed in wall street?', content = 'your only responsibility is to put meat on the table...')
 		
-		self.tutor_comment = Comment.objects.create(author = self.tutor, announcement = self.announcement, content = 'loremipsum1 loremipsum1')
+		self.tutor_comment = Comment.objects.create(author = self.tutor, announcement = self.announcement, content = 'Nobody, idc if it\'s warren buffet or jemmy buffet, nobody knows if the stock is gonna go up, down or in flobby circles, its all a fugazi, yk what a fugazi is???' )
 
-		self.student_comment = Comment.objects.create(author = self.student, announcement = self.announcement, content = 'loremipsum2 loremipsum2 loremipsum2')
+		self.student_comment = Comment.objects.create(author = self.student, announcement = self.announcement, content = 'fugazy its fake')
 
 
 	def test_create_comment(self):
@@ -739,7 +599,7 @@ class TestCommentViews(APITestCase):
 		
 		url = f'/announcements/{id}/comments/'
 
-		data = {'content': 'new comment'}
+		data = {'content': 'yeah, fugazi fugazy its wazy its woozy, its fairy dust, it never existed, it never landed its not event in the elemental chart'}
 
 		self.client.force_authenticate(user = self.tutor)
 
@@ -754,7 +614,7 @@ class TestCommentViews(APITestCase):
 		
 		url = f'/announcements/{id}/comments/'
 
-		data = {'content': 'new comment'}
+		data = {'content': 'Its incredible ,sir, cant tell you how excited Iam'}
 
 		self.client.force_authenticate(user = self.student)
 
@@ -769,7 +629,7 @@ class TestCommentViews(APITestCase):
 		
 		url = f'/announcements/{id}/comments/'
 
-		data = {'content': 'new comment'}
+		data = {'content': 'Just smile n dial!!!'}
 
 		self.client.force_authenticate(user = self.non_member)
 
@@ -840,8 +700,6 @@ class TestCommentViews(APITestCase):
 
 		url = f'/comments/{id}/'
 
-		# self.client.force_authenticate(user = )
-
 		response = self.client.get(url)
 
 		self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
@@ -891,8 +749,6 @@ class TestCommentViews(APITestCase):
 		id = self.announcement.id
 
 		url = f'/announcements/{id}/comments/'
-
-		# self.client.force_authenticate(user = )
 
 		response = self.client.get(url)
 
