@@ -67,27 +67,18 @@ class AnnouncementViewSet(viewsets.ModelViewSet):
 
 	serializer_class = AnnouncementSerializer
 
-	# ret member
-	# list member
-	# post, put tutor
-
-
-	def get_permissions(self):
-		
-		if self.action == 'list' or self.action == 'retrieve':
-			permission_classes = [permissions.IsTutorAnnouncement | permissions.IsStudent]
-		
-		elif self.action == 'update':
-			permission_classes = [permissions.IsTutorAnnouncement]
-
-		return [permission() for permission in permission_classes]
-
+	permission_classes = [IsAuthenticated & (permissions.IsTutorAnnouncement | permissions.IsStudent)]
 
 	def get_object(self, *args, **kwargs):
 
 		pk = self.kwargs.get("pk")
 
-		return Announcement.objects.get(pk=pk)
+		announcement = Announcement.objects.get(pk=pk)
+
+		self.check_object_permissions(self.request, announcement)
+		#NOTE: this needs to be applied for other resources
+		
+		return announcement
 
 
 	def get_queryset(self, *args, **kwargs):
@@ -103,6 +94,9 @@ class AnnouncementViewSet(viewsets.ModelViewSet):
 		
 		except Course.DoesNotExist:
 			raise NotFound('404 class not found')
+
+		if self.request.user != course.tutor and not self.request.user.enrolled_courses.filter(course=course).exists():
+			raise PermissionDenied('only course members can view announcements')
 
 		return self.queryset.filter(course=course)
 
@@ -141,7 +135,7 @@ class CommentViewSet(viewsets.ModelViewSet):
 			permission_classes = [permissions.IsCommentAuthor]
 		
 		else:
-			permission_classes = [permissions.IsMember]
+			permission_classes = [IsAuthenticated & permissions.IsMember]
 
 		return [permission() for permission in permission_classes]
 
@@ -150,7 +144,11 @@ class CommentViewSet(viewsets.ModelViewSet):
 
 		pk = self.kwargs.get("pk")
 
-		return Comment.objects.get(pk=pk)
+		comment =  Comment.objects.get(pk=pk)
+
+		self.check_object_permissions(self.request, comment)
+
+		return comment
 
 
 	def get_queryset(self, *args, **kwargs):
@@ -166,6 +164,9 @@ class CommentViewSet(viewsets.ModelViewSet):
 		
 		except Announcement.DoesNotExist:
 			raise NotFound('404 announcement not found')
+
+		if self.request.user != announcement.course.tutor and not self.request.user.enrolled_courses.filter(course = announcement.course).exists():
+			raise PermissionDenied('only course members can view comments')
 
 		return self.queryset.filter(announcement=announcement)
 
@@ -183,7 +184,7 @@ class CommentViewSet(viewsets.ModelViewSet):
 		except Announcement.DoesNotExist:
 			raise NotFound('404 announcement not found')
 
-		if self.request.user != announcement.course.tutor or not announcement.course.students.objects.filter(id = self.request.user.id).exists():
+		if self.request.user != announcement.course.tutor and not announcement.course.students.filter(student = self.request.user).exists():
 			raise PermissionDenied('only course members can comment')
 
 		return serializer.save(announcement=announcement, author = self.request.user)
@@ -206,6 +207,7 @@ class EnrollmentViewSet(viewsets.ModelViewSet):
 
 		if self.action == 'list':
 			permission_classes = [permissions.IsEnrollmentTutor]
+		# return statement hereeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
 
 	def perform_create(self, serializer):
 

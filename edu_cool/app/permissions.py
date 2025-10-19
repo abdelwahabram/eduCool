@@ -22,9 +22,11 @@ class IsTutorAnnouncement(permissions.BasePermission):
 
 class IsStudent(permissions.BasePermission):
 
+
 	def has_object_permission(self, request, view, obj):
 
-		if obj.course.students.objects.filter(id=request.user.id).exists():
+		if obj.course.students.filter(student=request.user).exists():
+			
 			return True
 
 		return False
@@ -37,7 +39,7 @@ class IsMember(permissions.BasePermission):
 		if obj.announcement.course.tutor == request.user:
 			return True
 
-		if obj.announcement.course.students.filter(id=request.user.id).exists():
+		if obj.announcement.course.students.filter(student=request.user).exists():
 			return True
 
 		return False
