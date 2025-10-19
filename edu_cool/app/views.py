@@ -135,7 +135,7 @@ class CommentViewSet(viewsets.ModelViewSet):
 			permission_classes = [permissions.IsCommentAuthor]
 		
 		else:
-			permission_classes = [permissions.IsMember]
+			permission_classes = [IsAuthenticated & permissions.IsMember]
 
 		return [permission() for permission in permission_classes]
 
@@ -184,7 +184,7 @@ class CommentViewSet(viewsets.ModelViewSet):
 		except Announcement.DoesNotExist:
 			raise NotFound('404 announcement not found')
 
-		if self.request.user != announcement.course.tutor or not announcement.course.students.objects.filter(id = self.request.user.id).exists():
+		if self.request.user != announcement.course.tutor and not announcement.course.students.filter(student = self.request.user).exists():
 			raise PermissionDenied('only course members can comment')
 
 		return serializer.save(announcement=announcement, author = self.request.user)
