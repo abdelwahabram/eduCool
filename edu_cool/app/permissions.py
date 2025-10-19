@@ -39,7 +39,7 @@ class IsMember(permissions.BasePermission):
 		if obj.announcement.course.tutor == request.user:
 			return True
 
-		if obj.announcement.course.students.filter(id=request.user.id).exists():
+		if obj.announcement.course.students.filter(student=request.user).exists():
 			return True
 
 		return False
