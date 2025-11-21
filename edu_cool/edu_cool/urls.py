@@ -22,7 +22,7 @@ urlpatterns = [
 
     re_path(r'^auth/', include('djoser.urls')),
     
-    re_path(r'^auth/', include('djoser.urls.jwt')),
+    # re_path(r'^auth/', include('djoser.urls.jwt')), Taree2 elsalama enta ba2a ya gedy
 
     path('', include('app.urls'))
 ]
