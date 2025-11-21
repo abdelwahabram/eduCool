@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework_simplejwt',
+    'rest_framework_simplejwt.token_blacklist',
     'djoser',
     'app',
 ]
@@ -141,17 +142,30 @@ MEDIA_URL = '/media/'
 REST_FRAMEWORK = {
 
 	'DEFAULT_AUTHENTICATION_CLASSES': (
+        'app.authenticate.JWTCookieAuth',
 		
-		'rest_framework_simplejwt.authentication.JWTAuthentication',
+		# 'rest_framework_simplejwt.authentication.JWTAuthentication',
 	)
 
 }
 
 
 SIMPLE_JWT = {
-   'AUTH_HEADER_TYPES': ('Bearer'),
-   'ACCESS_TOKEN_LIFETIME': timedelta(minutes = 30),
-   'REFRESH_TOKEN_LIFETIME': timedelta(days = 30),
-   'ROTATE_REFRESH_TOKENS': True
+    'AUTH_HEADER_TYPES': ('Bearer'),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes = 30),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days = 7),
+    # 'ROTATE_REFRESH_TOKENS': True,
+
+    "AUTH_COOKIE_ACCESS": "access_token",
+    "AUTH_COOKIE_REFRESH": "refresh_token",
+    "AUTH_COOKIE_DOMAIN": None,  # ".example.com" or None for standard domain cookie
+    "AUTH_COOKIE_SECURE": False,  # Whether the auth cookies should be secure (https:// only).
+    "AUTH_COOKIE_HTTP_ONLY": True,
+    "AUTH_COOKIE_SAMESITE": "Strict",  # The flag restricting cookie leaks on cross-site requests. 'Lax', 'Strict' or None to disable the flag.
+    
+    "AUTH_COOKIE_REFRESH_PATH": "/",
+
+    # "AUTH_COOKIE_REFRESH_PATH": "/jwt/refresh/", the cookie path is the path where it's accessible
+    # not the refresh url the front end would use to refresh the token
 }
 
