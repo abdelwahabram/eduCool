@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 
 from app.models import Course, Enrollment, Announcement, Comment
 
-from app.serializers import CourseSerializer, EnrollmentSerializer, AnnouncementSerializer, UserSerializer, CommentSerializer
+from app.serializers import CourseSerializer, EnrollmentSerializer, AnnouncementSerializer, UserSerializer, CommentSerializer, UserLogInSerializer
 
 from app import permissions
 
@@ -12,11 +12,31 @@ from rest_framework import viewsets
 
 from rest_framework.decorators import action
 
-from rest_framework.exceptions import NotFound, PermissionDenied
+from rest_framework.exceptions import NotFound, PermissionDenied, AuthenticationFailed
 
 from rest_framework.response import Response
 
 from rest_framework.permissions import IsAuthenticated
+
+from rest_framework.views import APIView
+
+from rest_framework.generics import GenericAPIView
+
+from rest_framework import status
+
+from rest_framework_simplejwt.tokens import RefreshToken
+
+from app.cookies import set_access_cookie, set_refresh_cookie, scan_refresh_cookie, remove_cookie
+
+from rest_framework.renderers import TemplateHTMLRenderer
+
+from django.contrib.auth import authenticate
+
+from django.middleware.csrf import rotate_token
+
+from rest_framework_simplejwt.views import TokenRefreshView
+
+from rest_framework_simplejwt.serializers import TokenBlacklistSerializer
 
 
 class CourseViewSet(viewsets.ModelViewSet):
@@ -31,11 +51,6 @@ class CourseViewSet(viewsets.ModelViewSet):
 
 	serializer_class = CourseSerializer
 	
-	# ret auth
-	# post auth
-	# put tutor
-	# list auth
-
 
 	def get_permissions(self):
 
@@ -258,3 +273,82 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
 	serializer_class = UserSerializer
 
 	permission_classes = [permissions.IsUserSession]
+
+
+# we might list these methods under the UserViewSet() with overriding the get_serializer depending upon the method, but it's fine like that
+
+class LogInView(GenericAPIView):
+
+	serializer_class = UserLogInSerializer
+
+	def post(self, request):
+
+		serializer = self.get_serializer(data=request.data)
+
+		serializer.is_valid()
+
+		username = serializer.validated_data['username']
+		
+		password = serializer.validated_data['password']
+
+		user = authenticate(request, username=username, password=password)
+
+		if not user or not user.is_active:
+			raise AuthenticationFailed(detail="no active user found")
+		
+		response = Response({}, status = status.HTTP_200_OK)
+
+		refresh_token = RefreshToken.for_user(user)
+
+		access_token = refresh_token.access_token
+
+		set_refresh_cookie(response, str(refresh_token))
+		
+		set_access_cookie(response, str(access_token))
+
+		rotate_token(request)
+		
+		return response
+
+
+class LogOutView(APIView):
+
+	def post(self, request):
+
+		refresh_token = scan_refresh_cookie(request)
+
+		print(refresh_token)
+
+		serializer = TokenBlacklistSerializer(data={"refresh": refresh_token})
+
+		serializer.is_valid(raise_exception=True)
+
+		response = Response({}, status.HTTP_200_OK)
+
+		remove_cookie(response)
+
+		return response
+
+
+class RefreshTokenView(TokenRefreshView):
+
+	def post(self, request, *args, **kwargs):
+
+		refresh_token = scan_refresh_cookie(request)
+
+		serializer = self.get_serializer(data = {"refresh": refresh_token})
+			
+		serializer.is_valid(raise_exceptions=True)
+
+		response = Response({}, status.HTTP_200_OK)
+
+		access_token = serializer.validated_data['access_token']
+		
+		refresh_token = serializer.validated_data['refresh_token']
+
+		set_access_cookie(response, str(access_token))
+		
+		set_refresh_cookie(response, str(refresh_token))
+		
+		return response
+

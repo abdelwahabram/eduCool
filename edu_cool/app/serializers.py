@@ -4,6 +4,8 @@ from django.contrib.auth.models import User
 
 from rest_framework import serializers
 
+from rest_framework_simplejwt.serializers import PasswordField
+
 
 class CourseSerializer(serializers.HyperlinkedModelSerializer):
 
@@ -66,3 +68,25 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
 		model = User
 		
 		fields = ['id', 'url', 'username', 'my_courses', 'enrolled_courses']
+
+
+# class LoginSerializer(serializers.class MODELNAMESerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = MODELNAME
+#         fields = ('',)
+#     )
+
+# class UserRegisterationSerializer(serializers.ModelSerializer):
+
+# 	re_type_password = PasswordField()
+
+# 	class Meta:
+
+# 		model = User
+
+# 		fields = ['username', 'email', 'password', 're_type_password']
+
+class UserLogInSerializer(serializers.Serializer):
+	username = serializers.CharField(write_only=True)
+	password = PasswordField()
+    

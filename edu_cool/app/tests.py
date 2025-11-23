@@ -10,12 +10,19 @@ from app.models import Course, Enrollment, Announcement, Comment
 
 from unittest import skip
 
+from app.cookies import have_cookies, scan_refresh_cookie
+
 # Create your tests here.
 
 # 1) start with the main scenario
 # 2) invert and check other cases
 # test cases naming: test_actor[tutor, student, non_member, anonymous]_operation[create, retrieve, update, list]_resource[course, comment, announcement,],
 # if the actor is tutor ommit it so it'd be just: test_operation_resource
+
+
+## use reverse to get the url using the name, to decouple it from urls changes
+# https://www.django-rest-framework.org/api-guide/testing/#example
+
 
 class TestUserRegistration(APITestCase):
 
@@ -68,29 +75,17 @@ class TestUserAuthentication(APITestCase):
 		self.user.set_password('$$ATYQW#9ER&TY123456')
 		
 		self.user.save()
+
+		self.inactive_user = User.objects.create(username='inactive_user', password='$$ATYQW#9ER&TY123456', email='user1@educool.com')
+
+		self.inactive_user.set_password('$$ATYQW#9ER&TY123456')
+
+		self.inactive_user.is_active = False
+		
+		self.user.save()
 	
-	# no need for thos after separating user auth and user registeration tests
-	# def test_register_user(self):
 
-	 	# url = '/auth/users/'
-
-		# data = {'username': 'user1', 'password': '$$ATYQW#9ER&TY123456', 'email': 'user1@educool.com'}
-
-		# response = self.client.post(url, data)
-
-		# self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-
-		# self.assertEqual(User.objects.count(), 1)
-
-		# url = '/auth/jwt/create'
-
-		# data = {'username': 'user1', 'password': '$$ATYQW#9ER&TY123456'}
-
-		# response = self.client.post(url, data)
-
-		# self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-
+	@skip('no longer supported, after storing the token in httponly cookie')
 	def test_jwt_token(self):
 
 		url = '/auth/jwt/create'
@@ -100,6 +95,119 @@ class TestUserAuthentication(APITestCase):
 		response = self.client.post(url, data)
 
 		self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
+	def test_login(self):
+		
+		url = '/login/'
+
+		data = {'username': 'user1', 'password': '$$ATYQW#9ER&TY123456'}
+
+		response = self.client.post(url, data)
+
+		self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
+	def test_invalid_username(self):
+		
+		url = '/login/'
+
+		data = {'username': 'user2', 'password': '$$ATYQW#9ER&TY123456'}
+
+		response = self.client.post(url, data)
+
+		self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+
+	def test_login_invalid_password(self):
+		
+		url = '/login/'	
+
+		data = {'username': 'user1', 'password': '$$ATYQW#9ER&TY654321'}
+
+		response = self.client.post(url, data)
+
+		self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+
+	def test_inactive_user(self):
+
+		url = '/login/'
+
+		data = {'username': 'inactive_user', 'password': '$$ATYQW#9ER&TY123456'}
+
+		response = self.client.post(url, data)
+
+		self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+
+	def test_logout(self):
+
+		url = '/login/'
+
+		data = {'username': 'user1', 'password': '$$ATYQW#9ER&TY123456'}
+
+		response = self.client.post(url, data)
+		
+		url = '/logout/'
+
+		response = self.client.post(url)
+
+		
+		self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+		self.assertEqual(have_cookies(response), False)
+
+		self.assertFalse(have_cookies(response))
+
+	
+	def test_logout_anonymous(self):
+	
+		url = '/logout/'
+
+		self.client.force_authenticate(user = None)
+
+		response = self.client.post(url)
+
+		self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+		self.assertEqual(have_cookies(response), False)
+
+	@skip('need to create a new function to read token from response obj first')
+	# tech_debt += 1
+	def test_refresh_token(self):
+
+		url = '/login/'
+
+		data = {'username': 'user1', 'password': '$$ATYQW#9ER&TY123456'}
+
+		response = self.client.post(url, data)
+
+		self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+		old_token = scan_refresh_cookie(response)
+
+		url = '/jwt/refresh/'
+
+		# self.client.force_authenticate(user = self.user)
+
+		# old_refresh_token = read_token_from_cookie()
+
+		response = self.client.post(url)
+
+		self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+		new_token = scan_refresh_cookie(response)
+
+		self.assertNotEqual(new_token, old_token)
+
+
+	@skip(' a lion doesnt concern himself with csrf checks' )
+	#tech_debt += 1
+	def test_csrf(self):
+		# jk, i still need to search a lil bit on how to do it correctly and don't waste more time on it now
+		pass
+		# but basically, we make a valid req, extract the csrf and add it to the header, make another req, then assert the status
 
 
 	def test_jwt_expirey(self):

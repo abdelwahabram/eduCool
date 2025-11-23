@@ -30,6 +30,13 @@ urlpatterns = [
     
     path('', include(main_router.urls)),
 
+    path('login/', views.LogInView.as_view(), name = "login"),
+
+    path('logout/', views.LogOutView.as_view(), name = "logout"),
+
+    path('jwt/refresh/', views.RefreshTokenView.as_view(), name = "refresh-token")
+
+
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)
