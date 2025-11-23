@@ -5,6 +5,7 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 
 
 class JWTCookieAuth(JWTAuthentication, SessionAuthentication):
+	
 	#NOTE: another problem to learn about hear is the diamond overlapping multible inheritance problem
 
 		# the JWTAuthentication class doesn't ensure csrf token protection
@@ -25,6 +26,7 @@ class JWTCookieAuth(JWTAuthentication, SessionAuthentication):
 		# but i didn't want to repeat code and copy blindly also, I'd take sometime reading the CSRFCheck() class and what it does
 
 	def authenticate(self, request):
+		
 		# so to tweak the authsystem we need to override the authenticate method
 
 		#https://django-rest-framework-simplejwt.readthedocs.io/en/latest/rest_framework_simplejwt.html#rest_framework_simplejwt.authentication.JWTAuthentication it returns none if auth failed or a tuple of the user and the token in case of success
@@ -32,21 +34,21 @@ class JWTCookieAuth(JWTAuthentication, SessionAuthentication):
 		# here's how it's implemented so we can override it
 		# https://github.com/jazzband/djangorestframework-simplejwt/blob/5c067b2c7e9bdf83d958a89b2841bf382c411713/rest_framework_simplejwt/authentication.py#L27C1-L27C6
 
-
 		header = self.get_header(request)
 
 		raw_token = request.COOKIES.get(settings.SIMPLE_JWT["AUTH_COOKIE_ACCESS"])
 		
 		if not raw_token and header:
+			
 			raw_token = self.get_raw_token(header)
 
 		if not raw_token:
+			
 			return
 
 		self.enforce_csrf(request)
 
 		validated_token = self.get_validated_token(raw_token)
-
 
 		return self.get_user(validated_token), validated_token
 

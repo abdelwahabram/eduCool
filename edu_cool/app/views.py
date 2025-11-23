@@ -51,11 +51,6 @@ class CourseViewSet(viewsets.ModelViewSet):
 
 	serializer_class = CourseSerializer
 	
-	# ret auth
-	# post auth
-	# put tutor
-	# list auth
-
 
 	def get_permissions(self):
 
@@ -278,127 +273,6 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
 	serializer_class = UserSerializer
 
 	permission_classes = [permissions.IsUserSession]
-
-
-# class LogInAPIView(APIView):
-	# 	# TODO: Define requests here
-
-	# 	# serializer_class = UserLogInSerializer
-
-	# 	# renderer_classes = [TemplateHTMLRenderer]
-
-	# 	# template_name = "login.html"
-
-	# 	def post(self, request):
-
-	# 		serializer = UserLogInSerializer(data=request.data)
-
-	# 		print(request.data)
-
-	# 		if not serializer.is_valid():
-	# 			print("not valid")
-	# 			return Response({"invalid": "invalid"}, status=status.HTTP_400_BAD_REQUEST)
-
-
-	# 		# print(serializer.validated_data)
-
-	# 		username = serializer.validated_data['username']
-	# 		password = serializer.validated_data['password']
-
-	# 		user = authenticate(request, username=username, password=password)
-
-	# 		if not user:
-	# 			# raise 
-	# 			return Response({"invalid": "invalid"}, status=status.HTTP_400_BAD_REQUEST)
-
-	# 		response = Response({}, status = status.HTTP_200_OK)
-
-	# 		refresh_token = RefreshToken.for_user(user)
-
-	# 		access_token = refresh_token.access_token
-
-
-	# 		set_token_cookies(response, str(access_token), str(refresh_token))
-	# 		# set cookies
-			
-	# 		return response
-
-
-		# def get(self, request):
-
-		# 	return Response({"serializer": UserLogInSerializer()})
-
-	# class MODEL_NAMEViewSet(viewsets.ModelViewSet):
-	#     queryset = MODEL_NAME.objects.all()
-	#     serializer_class = SERIALIZER_CLASS
-	# # "username" : "yyy", "password":"456"
-
-
-# class AuthViewSet(viewsets.ViewSet):
-	# """
-	# Example empty viewset demonstrating the standard
-	# actions that will be handled by a router class.
-
-	# If you're using format suffixes, make sure to also include
-	# the `format=None` keyword argument for each action.
-	# """
-
-	# # def list(self, request):
-	# # 	pass
-
-	# serializer_class = UserLogInSerializer
-
-	# def create(self, request):
-
-	# 	serializer = UserLogInSerializer(data=request.data)
-
-	# 	# print(request.data)
-
-	# 	if not serializer.is_valid():
-	# 		# print("not valid")
-	# 		return Response({"invalid": "invalid"}, status=status.HTTP_400_BAD_REQUEST)
-
-
-	# 	# print(serializer.validated_data)
-
-	# 	username = serializer.validated_data['username']
-	# 	password = serializer.validated_data['password']
-
-	# 	user = authenticate(request, username=username, password=password)
-
-	# 	if not user:
-	# 		# raise 
-	# 		return Response({"invalid": "invalid"}, status=status.HTTP_400_BAD_REQUEST)
-
-	# 	response = Response({}, status = status.HTTP_200_OK)
-
-	# 	refresh_token = RefreshToken.for_user(user)
-
-	# 	access_token = refresh_token.access_token
-
-
-	# 	set_token_cookies(response, str(access_token), str(refresh_token))
-	# 	# set cookies
-		
-	# 	return response
-
-
-	# def retrieve(self, request):
-
-	# 	refresh_token = extract_token_from_cookie(request)
-
-	# 	serializer = TokenBlacklistSerializer(data={"refresh": refresh_token})
-
-	# 	try:
-	# 		serializer.is_valid(raise_exceptions=True)
-	# 	except e:
-	# 		raise e
-
-	# 	response = Response({}, status.HTTP_200_OK)
-
-	# 	remove_token(response)
-
-	# 	return response
 
 
 # we might list these methods under the UserViewSet() with overriding the get_serializer depending upon the method, but it's fine like that

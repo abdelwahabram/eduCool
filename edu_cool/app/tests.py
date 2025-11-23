@@ -84,27 +84,6 @@ class TestUserAuthentication(APITestCase):
 		
 		self.user.save()
 	
-	# no need for thos after separating user auth and user registeration tests
-	# def test_register_user(self):
-
-	 	# url = '/auth/users/'
-
-		# data = {'username': 'user1', 'password': '$$ATYQW#9ER&TY123456', 'email': 'user1@educool.com'}
-
-		# response = self.client.post(url, data)
-
-		# self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-
-		# self.assertEqual(User.objects.count(), 1)
-
-		# url = '/auth/jwt/create'
-
-		# data = {'username': 'user1', 'password': '$$ATYQW#9ER&TY123456'}
-
-		# response = self.client.post(url, data)
-
-		# self.assertEqual(response.status_code, status.HTTP_200_OK)
-
 
 	@skip('no longer supported, after storing the token in httponly cookie')
 	def test_jwt_token(self):
@@ -138,7 +117,6 @@ class TestUserAuthentication(APITestCase):
 		response = self.client.post(url, data)
 
 		self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-		# auth failed err
 
 
 	def test_login_invalid_password(self):
@@ -151,9 +129,6 @@ class TestUserAuthentication(APITestCase):
 
 		self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-		# auth failed err
-
-	# def test_login_  inactive user
 
 	def test_inactive_user(self):
 
@@ -176,21 +151,14 @@ class TestUserAuthentication(APITestCase):
 		
 		url = '/logout/'
 
-		# self.client.force_authenticate(user = self.user)
-
-		# self.client.login(username = "user1", password = "$$ATYQW#9ER&TY123456")
-
 		response = self.client.post(url)
 
-		print(response.content)
 		
 		self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 		self.assertEqual(have_cookies(response), False)
 
 		self.assertFalse(have_cookies(response))
-
-		print("**********************************")
 
 	
 	def test_logout_anonymous(self):

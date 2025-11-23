@@ -9,35 +9,6 @@ from rest_framework.exceptions import AuthenticationFailed
 
 # the old classic programming cookie pun ain't totally cringe sometimes, anyway
 
-# def set_token_cookies(response, access_token, refresh_token):
-
-	# max_age = settings.SIMPLE_JWT["ACCESS_TOKEN_LIFETIME"]
-
-	# secure = settings.SIMPLE_JWT["AUTH_COOKIE_SECURE"]
-
-	# domain = settings.SIMPLE_JWT["AUTH_COOKIE_DOMAIN"]
-
-	# httponly = settings.SIMPLE_JWT["AUTH_COOKIE_HTTP_ONLY"]
-
-	# samesite = settings.SIMPLE_JWT["AUTH_COOKIE_SAMESITE"]
-
-	# path = settings.SIMPLE_JWT["AUTH_COOKIE_REFRESH_PATH"]
-
-	# if access_token:
-
-	# 	key = settings.SIMPLE_JWT["AUTH_COOKIE_ACCESS"]
-
-	# 	value = access_token
-
-	# 	response.set_cookie(key=key, value=value, max_age=max_age, domain=domain, secure=secure, httponly=httponly, samesite=samesite)
-
-	# if refresh_token:
-		
-	# 	key = settings.SIMPLE_JWT["AUTH_COOKIE_REFRESH"]
-
-	# 	value = refresh_token
-
-	# 	response.set_cookie(key=key, value=value, max_age=max_age, path=path, domain=domain, secure=secure, httponly=httponly, samesite=samesite)
 
 def set_access_cookie(response, token):
 
@@ -109,19 +80,9 @@ def have_cookies(response) -> bool:
 
 	refresh_key = settings.SIMPLE_JWT["AUTH_COOKIE_REFRESH"]
 
-	print(response.cookies)
-
-	print(type(response.cookies.get(access_key)))
-	# print(response.cookies.get(access_key).value)
-
-	# if response.cookies.get(access_key) != None:
-	# removing a cookie just sets the expiry date to 1 jan 1970 and the
-	# value to empty string so it doesn't actually delete the cookie
 	if response.cookies.get(access_key) and response.cookies.get(access_key).value:
 		return True
 
-
-	# if response.cookies.get(refresh_key) != None:
 	if response.cookies.get(refresh_key) and response.cookies.get(refresh_key).value:
 		return True
 
