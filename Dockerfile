@@ -14,7 +14,8 @@ ENV PYTHONUNBUFFERED=1
 
 EXPOSE 8000
 
-CMD [ "python3", "edu_cool/manage.py", "runserver" , "0.0.0.0:8000"]
 
 RUN python3 edu_cool/manage.py makemigrations
 RUN python3 edu_cool/manage.py migrate
+
+CMD [ "python3", "edu_cool/manage.py", "runserver" , "0.0.0.0:8000"]
