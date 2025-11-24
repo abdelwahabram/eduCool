@@ -169,3 +169,52 @@ SIMPLE_JWT = {
     # not the refresh url the front end would use to refresh the token
 }
 
+
+LOGGING = {
+
+    'version': 1,
+
+    'disable_existing_loggers': False,  
+    
+    'formatters': {  
+        'detailed': {  
+            'format': '{levelname} {asctime} {module} {message}',  
+            'style': '{',  
+        },  
+        'simple': {  
+            'format': '{levelname} {message}',  
+            'style': '{',  
+        },  
+    },  
+    
+    'handlers': {  
+        'console': {  
+            'level': 'DEBUG',  
+            'class': 'logging.StreamHandler',  
+            'formatter': 'simple',  
+        },
+
+        'file': {  
+            'level': 'DEBUG',  
+            'class': 'logging.FileHandler',  
+            'filename': 'error.log',
+            'formatter': 'detailed',
+        },  
+    },
+
+    'loggers': {
+
+        'django': {  
+            'handlers': ['file'],  
+            'level': 'INFO',  
+        },
+
+        'django.server': {  
+            'handlers': ['file'],  
+            'level': 'INFO',  
+            'propagate': False,  
+        },  
+  
+    },  
+# for better monitoring, we need to log the api requests by overriding the middlware or using 3pp later
+}
