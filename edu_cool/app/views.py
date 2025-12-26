@@ -38,6 +38,7 @@ from rest_framework_simplejwt.views import TokenRefreshView
 
 from rest_framework_simplejwt.serializers import TokenBlacklistSerializer
 
+from django.shortcuts import render
 
 class CourseViewSet(viewsets.ModelViewSet):
 	"""
@@ -280,6 +281,14 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
 class LogInView(GenericAPIView):
 
 	serializer_class = UserLogInSerializer
+
+
+	def get(self, request):
+
+		serializer = self.get_serializer()
+
+		return render(request, "app/login.html.j2", {'serializer': serializer})
+
 
 	def post(self, request):
 
