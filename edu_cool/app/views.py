@@ -24,6 +24,8 @@ from rest_framework.generics import GenericAPIView
 
 from rest_framework import status
 
+from rest_framework.renderers import TemplateHTMLRenderer
+
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from app.cookies import set_access_cookie, set_refresh_cookie, scan_refresh_cookie, remove_cookie
@@ -70,6 +72,12 @@ class CourseViewSet(viewsets.ModelViewSet):
 		"""
 
 		return serializer.save(tutor=self.request.user)
+
+
+	@action(detail=True, methods=['get'], renderer_classes=[TemplateHTMLRenderer])
+	def lobby(self, request, pk):
+
+		return Response({}, template_name='app/lobby.html')
 
 
 class AnnouncementViewSet(viewsets.ModelViewSet):
