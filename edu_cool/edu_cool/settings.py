@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
-from decouple import config
+from decouple import config, Csv
 from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -31,13 +31,14 @@ SECRET_KEY = config('SECRET_KEY', default='django-insecure-@nlt48&a4ih4y6-&88ilj
 
 DEBUG = config('DEBUG', default=True, cast=bool)
 
-# ALLOWED_HOSTS = []
+# ALLOWED_HOSTS = ['*']
 
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default=['*'], cast=list)
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default=['127.0.0.1'], cast=Csv())
 
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -80,6 +81,21 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'edu_cool.wsgi.application'
+
+ASGI_APPLICATION = "edu_cool.asgi.application"
+
+# Channels
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("redis", 6379)],
+            # redis is the name of the redis service on compose
+            # "hosts": [config('REDIS_HOST',default=("127.0.0.1", 6379), cast=Csv(post_process=tuple))],
+        },
+    },
+}
+
 
 
 # Database
