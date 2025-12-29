@@ -1,4 +1,10 @@
 services:
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+
   django:
     build: .
 
@@ -9,3 +15,6 @@ services:
 
     volumes:
       - .:/app
+
+    depends_on:
+      - redis
