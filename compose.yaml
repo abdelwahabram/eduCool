@@ -6,15 +6,32 @@ services:
       - "6379:6379"
 
   django:
-    build: .
+    build: ./edu_cool
 
     ports:
       - "8000:8000"
     env_file:
-      - .env
+      - ./edu_cool/.env
 
     volumes:
-      - .:/app
+      - ./edu_cool:/app
+      - /app/app/static/
+      - /app/node_modules
+      - /app/.venv
 
     depends_on:
       - redis
+
+  sfu:
+    build: ./sfu
+
+    volumes:
+      - ./sfu:/app
+      - /app/node_modules
+
+    depends_on:
+      - django
+
+    tty: true
+
+    stdin_open: true
