@@ -360,3 +360,23 @@ class RefreshTokenView(TokenRefreshView):
 		
 		return response
 
+
+class RoomsView(GenericAPIView):
+
+	queryset = Course.objects.prefetch_related('students').all()
+
+	permission_classes = [IsAuthenticated]
+
+	renderer_classes = [TemplateHTMLRenderer]
+	
+	template_name = 'app/room.html'
+
+	def get(self, request, pk):
+
+		course = self.get_object()
+
+		if request.user != course.tutor and not course.students.filter(student = self.request.user).exists():
+			raise PermissionDenied('only course members can join rooms')
+		
+		return Response()
+		
