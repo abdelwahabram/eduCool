@@ -6,7 +6,13 @@ services:
       - "6379:6379"
 
   django:
-    build: ./edu_cool
+
+    build: 
+      # ./edu_cool
+      secrets: 
+        - server_cred_username
+        - server_cred_pass
+      context: ./edu_cool
 
     ports:
       - "8000:8000"
@@ -22,6 +28,10 @@ services:
     depends_on:
       - redis
 
+    # secrets:
+    #   - server_cred_username
+    #   - server_cred_pass
+
   sfu:
     build: ./sfu
 
@@ -35,3 +45,16 @@ services:
     tty: true
 
     stdin_open: true
+
+    secrets:
+      - server_cred_username
+      - server_cred_pass
+
+
+secrets:
+
+  server_cred_username:
+    file: ./secret0.txt
+
+  server_cred_pass:
+    file: ./secret1.txt

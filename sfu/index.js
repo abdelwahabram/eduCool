@@ -10,7 +10,7 @@ console.log('server running frfrfrfrfrfr')
 
 import axios from 'axios';
 
-// import cookie from 'cookie'
+import { secrets } from "docker-secret";
 
 
 function parseCookie(header){
@@ -26,9 +26,10 @@ function parseCookie(header){
 
 }
 
+console.log("ss: ", secrets.server_cred_username)
 
 axios.post('http://django:8000/login/', 
-	{username: 'tyler_67', password: 'asd123ZXC'}).then(function (response) {
+	{username: secrets.server_cred_username, password: secrets.server_cred_pass}).then(function (response) {
 		// handle success
 		console.log(response.headers['set-cookie']);
 		console.log(response.data);
