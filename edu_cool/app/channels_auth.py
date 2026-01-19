@@ -8,8 +8,7 @@ from rest_framework_simplejwt.exceptions import TokenError
 
 from django.contrib.auth.models import User
 
-from rest_framework.exceptions import NotAuthenticated
-
+from rest_framework.exceptions import NotAuthenticated, AuthenticationFailed
 
 class ChannelsJwtAuth:
 
@@ -49,11 +48,6 @@ class ChannelsJwtAuth:
 			raise AuthenticationFailed(' no user found')
 
 		scope['user'] = user
-
-
-		# else:
-		# 	# scope['user'] = AnonymousUser()
-		# 	# this is just a basic version to add the user info to the scope
 
 		return await self.app(scope, receive, send)
 
