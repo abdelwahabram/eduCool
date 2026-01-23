@@ -38,7 +38,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
             raise DenyConnection('404: room not found')
 
-        if self.scope['user'] != course.tutor and not self.scope['user'].enrolled_courses.filter(id = course.id).aexists():
+        if self.scope['user'] != course.tutor and not await self.scope['user'].enrolled_courses.filter(id = course.id).aexists():
 
             raise DenyConnection('only tutors and students could join this rrom')
 
