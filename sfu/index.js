@@ -1,38 +1,12 @@
 console.log('server running frfrfrfrfrfr')
 
-// send get req to login
-// extract the csrf token
-// extract the creds from the docker secret
-// send post req to login
-// extract the cookie from the response obj
-// open ws connection with cookie included
-
-
 import axios from 'axios';
 
 import { secrets } from "docker-secret";
 
 
-function parseCookie(header){
-
-	let keyValue = header.split(';')[0] + ";"
-
-	return keyValue
-
-	// let key = keyValue[0]
-	// let value = keyValue[1]
-
-	// return {key: key, value: value}
-
-}
-
-console.log("ss: ", secrets.server_cred_username)
-
-axios.post('http://django:8000/login/', 
-	{username: secrets.server_cred_username, password: secrets.server_cred_pass}).then(function (response) {
-		// handle success
-		console.log(response.headers['set-cookie']);
-		console.log(response.data);
+axios.post('http://django:8000/login/', {username: secrets.server_cred_username, 
+	password: secrets.server_cred_pass}).then(function (response) {
 
 		let cookies = ''
 
@@ -42,31 +16,69 @@ axios.post('http://django:8000/login/',
 
 			cookies = cookies + parsedCookie
 
-			// cookies[parsedCookie['key']] = parsedCookie['value']
-
-
 		}
 
-		console.log(cookies)
 		return cookies
 
-	}).then(function(cookies){
+	}).then((cookies)=>{let ws = connect(cookies)})
 
-		console.log(cookies)
 
-		const chatSocket = new WebSocket(
-			'ws://' + 'django:8000' + '/ws/chat/',
+function connect (cookies){
 
-			{'headers': {
-            'Cookie': cookies
-				}
-         }
-      )
+	const socket = new WebSocket(
+		'ws://' + 'django:8000' + '/ws/chat/',
+		{'headers': {
+		'Cookie': cookies}
+	})
 
-		chatSocket.onopen = function(e){
-			console.log('skibidi connection')
-		}
 
-  })
+	socket.onopen = function(e){
+		console.log('skibidi connection')
+	}
+
+
+	socket.onmessage = handleNewMessage
+
+
+	socket.onclose = (event)=>{
+		console.log('socket closed')
+		console.log(event.reason)
+	}
+
+	socket.onerror = (event)=>{
+		console.log('socket err')
+		console.log(event)
+	}
+
+	return socket
+
+}
+
+
+function parseCookie(header){
+
+	let keyValue = header.split(';')[0] + ";"
+
+	return keyValue
+
+}
+
+
+let handleNewMessage = (event)=>{
+	console.log('new msg')
+}
+
+
+function sendMessage(type, content, remoteChannel = ''){
+
+	console.log('sending: ...', type)
+
+    let jsonMessage = JSON.stringify({'message':
+        {type: type, content:content, receiver_channel: remoteChannel}
+    })
+
+    ws.send(jsonMessage)
+
+};
 
 
