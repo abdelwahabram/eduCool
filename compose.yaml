@@ -27,10 +27,10 @@ services:
 
     depends_on:
       - redis
+    
+    healthcheck:
+      test: ["CMD-SHELL", "wget --spider http://django:8000/"]
 
-    # secrets:
-    #   - server_cred_username
-    #   - server_cred_pass
 
   sfu:
     build: ./sfu
@@ -40,11 +40,8 @@ services:
       - /app/node_modules
 
     depends_on:
-      - django
-
-    tty: true
-
-    stdin_open: true
+      django:
+        condition: service_healthy
 
     secrets:
       - server_cred_username
