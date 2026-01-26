@@ -1,6 +1,8 @@
 console.log('jsslinked frfrfrrr')
 
+
 let ws = connect()
+
 
 function connect(){
 
@@ -26,8 +28,24 @@ function connect(){
 		console.log(event)
 	}
 
+	return socket
+
 }
+
 
 let handleNewMessage = (event)=>{
 	console.log('new msg')
 }
+
+
+function sendMessage(type, content, remoteChannel = ''){
+
+	console.log('sending: ...', type)
+
+    let jsonMessage = JSON.stringify({'message':
+        {type: type, content:content, receiver_channel: remoteChannel}
+    })
+
+    ws.send(jsonMessage)
+
+};
