@@ -4,6 +4,8 @@ import axios from 'axios';
 
 import { secrets } from "docker-secret";
 
+import * as mediasoup from "mediasoup";
+
 
 axios.post('http://django:8000/login/', {username: secrets.server_cred_username, 
 	password: secrets.server_cred_pass}).then(function (response) {
@@ -21,6 +23,9 @@ axios.post('http://django:8000/login/', {username: secrets.server_cred_username,
 		return cookies
 
 	}).then((cookies)=>{let ws = connect(cookies)})
+
+
+let worker = await createWorker()
 
 
 function connect (cookies){
@@ -51,6 +56,17 @@ function connect (cookies){
 	}
 
 	return socket
+
+}
+
+
+async function createWorker(){
+
+	const worker = await mediasoup.createWorker()
+
+	worker.on("died", (error) =>{
+		console.error("mediasoup worker died!: %o", error);
+	});
 
 }
 
