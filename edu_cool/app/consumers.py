@@ -60,6 +60,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         if not message['receiver_channel']:
 
+            message['user_name'] = self.scope['user'].username
+
+            message['room'] = self.room_name
+
             await self.channel_layer.group_send(
                 self.sfu_group, {"type": "chat.message", "message": message}
             )
