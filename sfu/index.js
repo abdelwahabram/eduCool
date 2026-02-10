@@ -6,6 +6,43 @@ import { secrets } from "docker-secret";
 
 import * as mediasoup from "mediasoup";
 
+let ws;
+
+let routers = new Map()
+
+let peersInRoom = new Map()
+
+let mediaCodecs = [
+	{
+		kind: "video",
+		mimeType: "video/H264",
+
+		/*
+			// h264 over vp9 or 8 for video conference
+			// as the higher the compression rate(in vp), the longer the encoding time=> higher latency
+			// but if we need to pay a royalty fee, then go for vp8,9 but this is up to the browser or the os if i'm not mistaken
+			// I hope I'm not. is this serious?! what's the worst thing that can happen? they're gonna sue me???
+			"your honor, it's just a side project"
+		*/
+
+		clockRate: 90000,
+		parameters:{
+			"profile-level-id": "42e01f",
+			// 42e0 represents h264 baseline profile, it's simple, require less processing and it has low latency which is good for video conference
+			"packetization-mode": 1,
+			"level-asymmetry-allowed": 1
+		}
+	},
+
+	{
+		kind: "audio",
+		mimeType: "audio/opus",
+		clockRate: 48000,
+		channels: 2
+
+	}
+]
+
 
 axios.post('http://django:8000/login/', {username: secrets.server_cred_username, 
 	password: secrets.server_cred_pass}).then(function (response) {
@@ -22,7 +59,7 @@ axios.post('http://django:8000/login/', {username: secrets.server_cred_username,
 
 		return cookies
 
-	}).then((cookies)=>{let ws = connect(cookies)})
+	}).then((cookies)=>{ws = connect(cookies)})
 
 
 let worker = await createWorker()
@@ -68,6 +105,8 @@ async function createWorker(){
 		console.error("mediasoup worker died!: %o", error);
 	});
 
+	return worker
+
 }
 
 
@@ -82,6 +121,16 @@ function parseCookie(header){
 
 let handleNewMessage = (event)=>{
 	console.log('new msg')
+
+	let messageJson = JSON.parse(event.data)['message']
+
+	console.log(messageJson['type'])
+
+	if (messageJson['type'] === 'router-rtp-request'){
+
+		handleRtpRequest(messageJson)
+
+	}
 }
 
 
@@ -98,3 +147,32 @@ function sendMessage(type, content, remoteChannel = ''){
 };
 
 
+async function handleRtpRequest(message){
+
+	let remoteChannel = message['sender_channel']
+
+	let router = await getRouter(message['room'])
+
+	peersInRoom.get(message['room']).add(remoteChannel)
+
+	sendMessage('RTPC', router.rtpCapabilities, remoteChannel)
+
+}
+
+
+async function getRouter(room){
+
+	if (routers.has(room)){
+
+		return routers.get(room)
+	}
+
+	let router = worker.createRouter({mediaCodecs,})
+
+	peersInRoom.set(room, new Set())
+
+	routers.set(room, router)
+
+	return router
+
+}
