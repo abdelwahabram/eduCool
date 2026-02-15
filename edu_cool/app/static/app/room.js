@@ -1,5 +1,6 @@
 console.log('jsslinked frfrfrrr')
 
+import * as mediasoupClient from "mediasoup-client";
 
 const mediaSpecs = {
   audio: true,
@@ -8,6 +9,9 @@ const mediaSpecs = {
 
 let audioProducerOptions = {};
 let videoProducerOptions = {};
+
+
+let device;
 
 
 let ws = connect()
@@ -45,8 +49,20 @@ function connect(){
 }
 
 
-let handleNewMessage = (event)=>{
+function handleNewMessage(event){
+
 	console.log('new msg')
+
+	let messageJson = JSON.parse(event.data)['message']
+
+	let type = messageJson['type']
+
+	console.log(type)
+
+	if (type === "RTPC"){
+		
+		handleRTPC(messageJson['content'])
+	}
 }
 
 
@@ -92,4 +108,35 @@ function start(){
 
 	sendMessage('router-rtp-request', '')
 	
+}
+
+
+function handleRTPC(content){
+
+	createDev(content).then(()=>{requestSendTransport()})
+}
+
+
+async function createDev(rtpc){
+
+	console.log(" creating dev")
+
+	try{
+
+		device = await mediasoupClient.Device.factory();
+
+	}catch (error){
+
+		if (error.name === 'UnsupportedError')
+			console.warn('browser not supported');
+	}
+
+	await device.load({ routerRtpCapabilities:rtpc });
+
+}
+
+
+function requestSendTransport(){
+
+	sendMessage('send-transport-request', '')
 }
