@@ -12,6 +12,8 @@ let routers = new Map()
 
 let peersInRoom = new Map()
 
+let transportOfPeer = new Map()
+
 let mediaCodecs = [
 	{
 		kind: "video",
@@ -64,6 +66,8 @@ axios.post('http://django:8000/login/', {username: secrets.server_cred_username,
 
 let worker = await createWorker()
 
+let wrtcServer = await createWebRtcServer()
+
 
 function connect (cookies){
 
@@ -110,6 +114,25 @@ async function createWorker(){
 }
 
 
+async function createWebRtcServer(){
+
+	const wrtcServer = await worker.createWebRtcServer({listenInfos:[
+      {
+        protocol : 'udp',
+        ip       : 'sfu',
+        port     : 20000
+      },
+      {
+        protocol : 'tcp',
+        ip       : 'sfu',
+        port     : 20000
+      }
+    ]})
+
+	return wrtcServer
+}
+
+
 function parseCookie(header){
 
 	let keyValue = header.split(';')[0] + ";"
@@ -129,6 +152,10 @@ let handleNewMessage = (event)=>{
 	if (messageJson['type'] === 'router-rtp-request'){
 
 		handleRtpRequest(messageJson)
+
+	}else if(messageJson['type'] === 'send-transport-request'){
+
+		createSendTransport(messageJson)
 
 	}
 }
@@ -174,5 +201,41 @@ async function getRouter(room){
 	routers.set(room, router)
 
 	return router
+
+}
+
+
+function createSendTransport(content){
+
+	let transport = await router.createWebRtcTransport({webRtcServer : webRtcServer})
+
+	transport.on('icestatechange', (iceState)=>{
+		if(iceState === "disconnected"){
+			console.log("ice state: disconnected, transport will be closed")
+			transport.close()
+		}
+	})
+
+	transport.on('dtlsstatechange', (dtlsState)=>{
+
+		if(dtlsState === "closed"){
+			console.log("dtls is closed, transport will be closed")
+			transport.close()
+		}
+	})
+
+	let remoteChannel = message['sender_channel']
+
+	transportOfPeer.set(remoteChannel, transport)
+
+	let transportData = {
+		id: transport.id,
+		iceParameters: transport.iceParameters,
+		iceCandidates: transport.iceCandidates,
+		dtlsParameters: transport.dtlsParameters,
+		sctpParameters: transport.sctpParameters
+	}
+
+	sendMessage('send-transport-created', transportData, remoteChannel)
 
 }
