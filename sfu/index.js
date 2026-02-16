@@ -119,12 +119,14 @@ async function createWebRtcServer(){
 	const wrtcServer = await worker.createWebRtcServer({listenInfos:[
       {
         protocol : 'udp',
-        ip       : 'sfu',
+        ip       : '0.0.0.0',
+        announcedAddress: 'sfu',
         port     : 20000
       },
       {
         protocol : 'tcp',
-        ip       : 'sfu',
+        ip       : '0.0.0.0',
+        announcedAddress: 'sfu',
         port     : 20000
       }
     ]})
@@ -205,7 +207,7 @@ async function getRouter(room){
 }
 
 
-function createSendTransport(content){
+async function createSendTransport(content){
 
 	let transport = await router.createWebRtcTransport({webRtcServer : webRtcServer})
 
