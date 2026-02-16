@@ -66,7 +66,7 @@ axios.post('http://django:8000/login/', {username: secrets.server_cred_username,
 
 let worker = await createWorker()
 
-let wrtcServer = await createWebRtcServer()
+let webRtcServer = await createWebRtcServer()
 
 
 function connect (cookies){
@@ -209,6 +209,8 @@ async function getRouter(room){
 
 async function createSendTransport(content){
 
+	let router = await getRouter(content['room'])
+
 	let transport = await router.createWebRtcTransport({webRtcServer : webRtcServer})
 
 	transport.on('icestatechange', (iceState)=>{
@@ -226,7 +228,7 @@ async function createSendTransport(content){
 		}
 	})
 
-	let remoteChannel = message['sender_channel']
+	let remoteChannel = content['sender_channel']
 
 	transportOfPeer.set(remoteChannel, transport)
 
