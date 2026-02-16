@@ -16,6 +16,11 @@ let device;
 
 let ws = connect()
 
+let sendTransport;
+
+let savedConnectCallback;
+
+let savedProduceCallback;
 
 function connect(){
 
@@ -62,6 +67,21 @@ function handleNewMessage(event){
 	if (type === "RTPC"){
 		
 		handleRTPC(messageJson['content'])
+
+	}else if (type === 'send-transport-created'){
+
+		createSendTransport(messageJson['content'])
+
+	}else if(type === 'connect-callback'){
+
+		savedConnectCallback()
+
+	}else if(type === 'produce-callback'){
+
+		let id = messageJson['content'][id]
+
+		savedProduceCallback({id})
+
 	}
 }
 
@@ -139,4 +159,77 @@ async function createDev(rtpc){
 function requestSendTransport(){
 
 	sendMessage('send-transport-request', '')
+}
+
+async function createSendTransport(content){
+
+	try{
+
+		sendTransport = await device.createSendTransport(content)
+
+	}catch(error){
+		console.log(error)
+	}
+	
+	sendTransport.on("connect", async ({ dtlsParameters }, callback, errback) =>{
+		try{
+
+			sendMessage("transport-connect", {transportId: sendTransport.id, dtlsParameters:dtlsParameters})
+
+			savedConnectCallback = callback
+			// save this function to be called later once the server have been notified, and replied with 'connect-callback'
+
+		}catch(error){
+			errback(error)
+		}
+	})
+
+	sendTransport.on("produce", async (parameters, callback, errback) =>{
+		try{
+
+			let produceParameters = {
+				transportId: sendTransport.id, 
+				kind: parameters.kind, 
+				rtpParameters: parameters.rtpParameters, 
+				appData: parameters.appData
+			}
+
+			sendMessage('transport-produce', produceParameters)
+
+			savedProduceCallback = callback
+			// save this function until we receive 'produce-callback' with the id
+
+		}catch(error){
+			errback(error)
+		}
+	})
+
+	produce()
+
+}
+
+async function produce(){
+
+	vProducer = await sendTransport.produce(videoProducerOptions)
+	
+	aProducer = await sendTransport.produce(audioProducerOptions)
+
+
+	vProducer.on("transportclose", () =>{
+		console.log("transport closed so video producer closed");
+	});
+
+	vProducer.on("trackended", () =>{
+		console.log("video track ended");
+	});
+
+
+	aProducer.on("transportclose", () =>{
+		console.log("transport closed so audio producer closed");
+	});
+
+	aProducer.on("trackended", () =>{
+		console.log("audio track ended");
+	});
+
 }
