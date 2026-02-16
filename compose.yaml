@@ -38,6 +38,9 @@ services:
   sfu:
     build: ./sfu
 
+    ports:
+      - "20000:20000"
+
     volumes:
       - ./sfu:/app
       - /app/node_modules
