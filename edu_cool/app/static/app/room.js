@@ -78,7 +78,7 @@ function handleNewMessage(event){
 
 	}else if(type === 'produce-callback'){
 
-		let id = messageJson['content'][id]
+		let id = messageJson['content']['id']
 
 		savedProduceCallback({id})
 
