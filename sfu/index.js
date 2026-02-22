@@ -159,6 +159,14 @@ let handleNewMessage = (event)=>{
 
 		createSendTransport(messageJson)
 
+	}else if(messageJson['type'] === 'transport-connect'){
+
+		sendTransportConnect(messageJson)
+
+	}else if(messageJson['type'] === 'transport-produce'){
+
+		produce(messageJson)
+
 	}
 }
 
@@ -242,4 +250,29 @@ async function createSendTransport(content){
 
 	sendMessage('send-transport-created', transportData, remoteChannel)
 
+}
+
+
+async function sendTransportConnect(message){
+
+	let remoteChannel = message['sender_channel']
+
+	let transport = transportOfPeer.get(remoteChannel)
+
+	await transport.connect(message['content'])
+
+	sendMessage('connect-callback', '', remoteChannel)
+
+}
+
+
+async function produce(message){
+
+	let remoteChannel = message['sender_channel']
+
+	let transport = transportOfPeer.get(remoteChannel)
+
+	let producer = await transport.produce(message['content'])
+
+	sendMessage('produce-callback', {id: producer.id}, remoteChannel)
 }
