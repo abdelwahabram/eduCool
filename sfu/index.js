@@ -6,6 +6,10 @@ import { secrets } from "docker-secret";
 
 import * as mediasoup from "mediasoup";
 
+import os from 'node:os';
+
+// import os;
+
 let ws;
 
 let routers = new Map()
@@ -44,6 +48,23 @@ let mediaCodecs = [
 
 	}
 ]
+
+
+function what_is_my_ip(){
+
+	/* return the container ip if run inside a container ,otherwise the host ip */
+
+	const interfaces = os.networkInterfaces();
+
+	// console.log(interfaces)
+
+	for(const i of Object.values(interfaces)){
+		if (i['internal'] === false && i['family'] === 'IPv4'){
+			return i['address']
+		}
+	}
+
+}
 
 
 axios.post('http://django:8000/login/', {username: secrets.server_cred_username, 
@@ -117,18 +138,26 @@ async function createWorker(){
 async function createWebRtcServer(){
 
 	const wrtcServer = await worker.createWebRtcServer({listenInfos:[
-      {
-        protocol : 'udp',
-        ip       : '0.0.0.0',
-        announcedAddress: 'sfu',
-        port     : 20000
-      },
-      {
-        protocol : 'tcp',
-        ip       : '0.0.0.0',
-        announcedAddress: 'sfu',
-        port     : 20000
-      }
+		{
+			protocol : 'udp',
+			ip       : '0.0.0.0',
+			announcedAddress: process.env.ANNOUNCEDIP || what_is_my_ip(),
+			port     : 20000
+		// set public ip for production, or private for dev
+
+		// we can't use service name as it will be sent to the client as a literal string
+		// during ice exchange to allow p2p communication behind nat, we need to send an ip
+
+		// also we can't use "127.0.0.1" , as some browsers(ff) 
+		// don't listen to it during ice exchange
+		},
+
+		{
+			protocol : 'tcp',
+			ip       : '0.0.0.0',
+			announcedAddress: process.env.ANNOUNCEDIP || what_is_my_ip(),
+			port     : 20000
+		}
     ]})
 
 	return wrtcServer
