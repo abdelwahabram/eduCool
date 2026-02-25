@@ -18,6 +18,8 @@ let peersInRoom = new Map()
 
 let transportOfPeer = new Map()
 
+let recvTransport = new Map()
+
 let mediaCodecs = [
 	{
 		kind: "video",
@@ -196,6 +198,10 @@ let handleNewMessage = (event)=>{
 
 		produce(messageJson)
 
+	}else if(messageJson['type'] === 'recv-transport-request'){
+
+		createRecvTransport(messageJson)
+
 	}
 }
 
@@ -244,9 +250,9 @@ async function getRouter(room){
 }
 
 
-async function createSendTransport(content){
+async function createTransport(room){
 
-	let router = await getRouter(content['room'])
+	let router = await getRouter(room)
 
 	let transport = await router.createWebRtcTransport({webRtcServer : webRtcServer})
 
@@ -264,6 +270,15 @@ async function createSendTransport(content){
 			transport.close()
 		}
 	})
+
+	return transport
+
+}
+
+
+async function createSendTransport(content){
+
+	let transport = await createTransport(content['room'])
 
 	let remoteChannel = content['sender_channel']
 
@@ -317,4 +332,25 @@ function notifyPeers(transportId, room){
 	}
 
 }
+
+
+async function createRecvTransport(message){
+
+	let transport = await createTransport(message['room'])
+
+	recvTransport.set(transport.id, transport)
+	// save the obj by id to connect with client transport and create consumer
+
+	let remoteChannel = message['sender_channel']
+
+	let transportData = {
+
+		id: transport.id,
+		iceParameters: transport.iceParameters,
+		iceCandidates: transport.iceCandidates,
+		dtlsParameters: transport.dtlsParameters, 
+		sendTransportId: message['content']
+	}
+
+	sendMessage('recv-transport-created', transportData, remoteChannel)
 }
