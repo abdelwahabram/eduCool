@@ -22,6 +22,13 @@ let savedConnectCallback;
 
 let savedProduceCallback;
 
+let recvTranportCallBack;
+
+let recvTransports = new Map();
+
+let connectedReceiver = new Map();
+
+
 function connect(){
 
 	socket = new WebSocket(
@@ -86,6 +93,12 @@ function handleNewMessage(event){
 
 		requestRecvTransport(messageJson['content'])
 
+	}else if(type === 'recv-transport-created'){
+
+		createRecvTransport(messageJson['content'])
+
+	}else if(type === 'recv-connect-callback'){
+		recvTranportCallBack()
 	}
 }
 
@@ -165,11 +178,11 @@ function requestSendTransport(){
 	sendMessage('send-transport-request', '')
 }
 
-async function createSendTransport(content){
+function createSendTransport(content){
 
 	try{
 
-		sendTransport = await device.createSendTransport(content)
+		sendTransport = device.createSendTransport(content)
 
 	}catch(error){
 		console.log(error)
@@ -242,4 +255,45 @@ async function produce(){
 function requestRecvTransport(id){
 
 	sendMessage('recv-transport-request', id)
+}
+
+
+function createRecvTransport(message){
+
+	let transport = device.createRecvTransport(message)
+
+	transport.on("connect", ({ dtlsParameters }, callback, errback) =>{
+
+		try{
+
+			sendMessage('recv-transport-connect', {transportId: transport.id, dtlsParameters: dtlsParameters})
+
+			recvTranportCallBack = callback
+
+		}catch(error){
+
+			errback(error)
+		}
+	}
+
+	recvTransports.set(transport.id, transport)
+
+	connectedReceiver.set(message['sendTransportId'], transport.id)
+
+	canConsume(transport.id, message['sendTransportId'])
+
+}
+
+
+function canConsume(recvTransportId, sendTransportId){
+	
+	// the receiver consumes media from the producer of this sendTransport
+	let content = {
+		rtpc: device.rtpCapabilities,
+		recvTransportId: recvTransportId,
+		sendTransportId: sendTransportId
+	}
+
+	sendMessage('canConsume?', content)
+	
 }
