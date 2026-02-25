@@ -304,4 +304,17 @@ async function produce(message){
 	let producer = await transport.produce(message['content'])
 
 	sendMessage('produce-callback', {id: producer.id}, remoteChannel)
+
+	notifyPeers(transport.id, message['room'])
+
+}
+
+
+function notifyPeers(transportId, room){
+
+	for( let peer of peersInRoom.get(room)){
+		sendMessage('new-peer', transportId, peer)
+	}
+
+}
 }
