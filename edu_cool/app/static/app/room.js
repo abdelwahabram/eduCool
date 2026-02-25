@@ -82,6 +82,10 @@ function handleNewMessage(event){
 
 		savedProduceCallback({id})
 
+	}else if(type === 'new-peer'){
+
+		requestRecvTransport(messageJson['content'])
+
 	}
 }
 
@@ -232,4 +236,10 @@ async function produce(){
 		console.log("audio track ended");
 	});
 
+}
+
+
+function requestRecvTransport(id){
+
+	sendMessage('recv-transport-request', id)
 }
