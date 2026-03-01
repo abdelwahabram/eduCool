@@ -16,7 +16,9 @@ let routers = new Map()
 
 let peersInRoom = new Map()
 
-let transportOfPeer = new Map()
+let sendTransport = new Map()
+
+let producers = new Map();
 
 let recvTransport = new Map()
 
@@ -192,7 +194,9 @@ let handleNewMessage = (event)=>{
 
 	}else if(messageJson['type'] === 'transport-connect'){
 
-		sendTransportConnect(messageJson)
+		let transport = sendTransport.get(messageJson['content']['transportId'])
+
+		connectTransport(messageJson, transport)
 
 	}else if(messageJson['type'] === 'transport-produce'){
 
@@ -202,7 +206,17 @@ let handleNewMessage = (event)=>{
 
 		createRecvTransport(messageJson)
 
+	}else if(messageJson['type'] === 'recv-transport-connect'){
+
+		let transport = recvTransport.get(messageJson['content']['transportId'])
+
+		connectTransport(messageJson, transport)
+
+	}else if(messageJson['type'] === 'canConsume?'){
+
+		consume(messageJson)
 	}
+
 }
 
 
@@ -239,7 +253,7 @@ async function getRouter(room){
 		return routers.get(room)
 	}
 
-	let router = worker.createRouter({mediaCodecs,})
+	let router = await worker.createRouter({mediaCodecs,})
 
 	peersInRoom.set(room, new Set())
 
@@ -282,7 +296,7 @@ async function createSendTransport(content){
 
 	let remoteChannel = content['sender_channel']
 
-	transportOfPeer.set(remoteChannel, transport)
+	sendTransport.set(transport.id, transport)
 
 	let transportData = {
 		id: transport.id,
@@ -297,15 +311,24 @@ async function createSendTransport(content){
 }
 
 
-async function sendTransportConnect(message){
+async function connectTransport(message, transport){
 
 	let remoteChannel = message['sender_channel']
 
-	let transport = transportOfPeer.get(remoteChannel)
-
 	await transport.connect(message['content'])
 
-	sendMessage('connect-callback', '', remoteChannel)
+	let type
+
+	if(message['type'] === 'transport-connect'){
+
+		type = 'connect-callback'
+
+	}else{
+
+		type = 'recv-connect-callback'
+	}
+
+	sendMessage(type, '', remoteChannel)
 
 }
 
@@ -314,9 +337,13 @@ async function produce(message){
 
 	let remoteChannel = message['sender_channel']
 
-	let transport = transportOfPeer.get(remoteChannel)
+	let transport = sendTransport.get(message['content']['transportId'])
 
+	// console.log('producing', message['content'])
+	
 	let producer = await transport.produce(message['content'])
+
+	producers.set(transport.id, producer)
 
 	sendMessage('produce-callback', {id: producer.id}, remoteChannel)
 
@@ -353,4 +380,42 @@ async function createRecvTransport(message){
 	}
 
 	sendMessage('recv-transport-created', transportData, remoteChannel)
+}
+
+
+async function consume(message){
+
+	let remoteChannel = message['sender_channel']
+
+	let sendTransportId = message['content']['sendTransportId']
+
+	let producer = producers.get(sendTransportId)
+	
+	let router = await getRouter(message['room'])
+
+	let consumerOptions = {producerId: producer.id, rtpCapabilities: message['content']['rtpc'], paused: true}
+
+	if(!router.canConsume(consumerOptions)){
+
+		console.log(remoteChannel, 'can not consume media from ', sendTransportId )
+
+		sendMessage('device can not consume produced media', '', remoteChannel)
+
+		return
+
+	}
+
+	let transport = recvTransport.get(message['content']['recvTransportId'])
+
+	let consumer = await transport.consume(consumerOptions)
+
+	let clientConsumerOptions = {
+		id: consumer.id,
+		producerId: consumer.producerId,
+		kind: consumer.kind,
+		rtpParameters: consumer.rtpParameters,
+		recvTransportId: message['content']['recvTransportId']
+	}
+
+	sendMessage('consume', clientConsumerOptions, remoteChannel)
 }
