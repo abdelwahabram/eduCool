@@ -98,7 +98,13 @@ function handleNewMessage(event){
 		createRecvTransport(messageJson['content'])
 
 	}else if(type === 'recv-connect-callback'){
+
 		recvTranportCallBack()
+
+	}else if(type === 'consume'){
+
+		consume(messageJson['content'])
+
 	}
 }
 
@@ -254,6 +260,10 @@ async function produce(){
 
 function requestRecvTransport(id){
 
+	if( id === sendTransport.id){
+		return
+	}
+
 	sendMessage('recv-transport-request', id)
 }
 
@@ -274,7 +284,7 @@ function createRecvTransport(message){
 
 			errback(error)
 		}
-	}
+	})
 
 	recvTransports.set(transport.id, transport)
 
@@ -296,4 +306,68 @@ function canConsume(recvTransportId, sendTransportId){
 
 	sendMessage('canConsume?', content)
 	
+}
+
+
+async function consume(message){
+
+	console.log(message)
+
+	let recvTransportId = message['recvTransportId']
+
+	let transport = recvTransports.get(recvTransportId)
+
+	let consumer = await transport.consume(message)
+
+	let elements = createWrapper(recvTransportId)
+
+	const { track } = consumer;
+
+	// if (message['kind'] === 'video'){
+	// 	elements[0].srcObject = track
+	// }
+
+	console.log(message['kind'])
+	console.log(elements[message['kind']])
+	elements[message['kind']].srcObject = new MediaStream([ track ]);
+
+
+
+}
+
+function createWrapper(recvTransportId, username = ''){
+
+	console.log('creating elms')
+
+	if (document.getElementById(recvTransportId) !== null){
+		let audio = document.getElementById('audio-' + recvTransportId)
+		let video = document.getElementById('video-' + recvTransportId)
+
+		return {'video': video, 'audio': audio}
+	}
+
+	let user = document.createElement('h2')
+
+	username.innerHTML = username
+
+	let audio = document.createElement('audio')
+	audio.id = 'audio-' + recvTransportId
+	audio.autoplay = true
+
+	let video = document.createElement('video')
+	video.id = 'video-'+ recvTransportId
+	video.autoplay= true
+	video.playsinline = true
+
+	let wrapper = document.createElement('div')
+
+	wrapper.id = recvTransportId
+
+	wrapper.append(username, video, audio)
+
+	let container = document.getElementsByClassName('videos-container')[0]
+
+	container.append(wrapper)
+
+	return {'video': video, 'audio': audio}
 }
