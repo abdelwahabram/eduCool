@@ -258,13 +258,21 @@ async function produce(){
 }
 
 
-function requestRecvTransport(id){
+function requestRecvTransport(message){
+
+	let id = message['id']
 
 	if( id === sendTransport.id){
 		return
 	}
 
-	sendMessage('recv-transport-request', id)
+	if(connectedReceiver.has(id)){
+
+		canConsume(connectedReceiver.get(id), id, message['kind'])
+		return
+	}
+
+	sendMessage('recv-transport-request', message)
 }
 
 
@@ -289,19 +297,20 @@ function createRecvTransport(message){
 	recvTransports.set(transport.id, transport)
 
 	connectedReceiver.set(message['sendTransportId'], transport.id)
-
-	canConsume(transport.id, message['sendTransportId'])
+	console.log('created', message['kind'])
+	canConsume(transport.id, message['sendTransportId'], message['kind'])
 
 }
 
 
-function canConsume(recvTransportId, sendTransportId){
+function canConsume(recvTransportId, sendTransportId, kind){
 	
 	// the receiver consumes media from the producer of this sendTransport
 	let content = {
 		rtpc: device.rtpCapabilities,
 		recvTransportId: recvTransportId,
-		sendTransportId: sendTransportId
+		sendTransportId: sendTransportId,
+		kind: kind
 	}
 
 	sendMessage('canConsume?', content)
@@ -326,6 +335,8 @@ async function consume(message){
 	// if (message['kind'] === 'video'){
 	// 	elements[0].srcObject = track
 	// }
+
+	console.log(track)
 
 	console.log(message['kind'])
 	console.log(elements[message['kind']])

@@ -343,19 +343,32 @@ async function produce(message){
 	
 	let producer = await transport.produce(message['content'])
 
-	producers.set(transport.id, producer)
+	// producers.set(transport.id, producer)
+
+	saveProducer(transport.id, producer)
 
 	sendMessage('produce-callback', {id: producer.id}, remoteChannel)
 
-	notifyPeers(transport.id, message['room'])
+	notifyPeers(transport.id, producer.kind, message['room'])
 
 }
 
 
-function notifyPeers(transportId, room){
+function saveProducer(transportId, producer){
 
+	if(!producers.has(transportId)){
+		producers.set(transportId, {'audio': null, 'video': null})
+	}
+
+	producers.get(transportId)[producer.kind] = producer
+}
+
+
+function notifyPeers(transportId, kind, room){
+
+	console.log(peersInRoom.get(room))
 	for( let peer of peersInRoom.get(room)){
-		sendMessage('new-peer', transportId, peer)
+		sendMessage('new-peer', {id: transportId, kind: kind}, peer)
 	}
 
 }
@@ -376,7 +389,8 @@ async function createRecvTransport(message){
 		iceParameters: transport.iceParameters,
 		iceCandidates: transport.iceCandidates,
 		dtlsParameters: transport.dtlsParameters, 
-		sendTransportId: message['content']
+		sendTransportId: message['content']['id'],
+		kind: message['content']['kind']
 	}
 
 	sendMessage('recv-transport-created', transportData, remoteChannel)
@@ -389,8 +403,11 @@ async function consume(message){
 
 	let sendTransportId = message['content']['sendTransportId']
 
-	let producer = producers.get(sendTransportId)
+	let kind = message['content']['kind']
+
+	let producer = producers.get(sendTransportId)[kind]
 	
+	console.log('consuming', producer.kind, producer.id)
 	let router = await getRouter(message['room'])
 
 	let consumerOptions = {producerId: producer.id, rtpCapabilities: message['content']['rtpc'], paused: true}
