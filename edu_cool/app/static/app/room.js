@@ -342,6 +342,7 @@ async function consume(message){
 	console.log(elements[message['kind']])
 	elements[message['kind']].srcObject = new MediaStream([ track ]);
 
+	sendMessage('resume', consumer.id)
 
 
 }

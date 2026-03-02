@@ -22,6 +22,8 @@ let producers = new Map();
 
 let recvTransport = new Map()
 
+let consumers = new Map()
+
 let mediaCodecs = [
 	{
 		kind: "video",
@@ -215,6 +217,8 @@ let handleNewMessage = (event)=>{
 	}else if(messageJson['type'] === 'canConsume?'){
 
 		consume(messageJson)
+	}else if(messageJson['type'] === 'resume'){
+		resume(messageJson['content'])
 	}
 
 }
@@ -434,5 +438,18 @@ async function consume(message){
 		recvTransportId: message['content']['recvTransportId']
 	}
 
+	consumers.set(consumer.id, consumer)
+
 	sendMessage('consume', clientConsumerOptions, remoteChannel)
+}
+
+async function resume(consumerId){
+
+	console.log('resuming')
+
+	let consumer = consumers.get(consumerId)
+
+	console.log(consumer.id)
+
+	await consumer.resume()
 }
