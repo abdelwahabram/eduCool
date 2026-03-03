@@ -22,7 +22,7 @@ let savedConnectCallback;
 
 let savedProduceCallback;
 
-let recvTranportCallBack;
+let recvTranportCallBacks = new Map();
 
 let recvTransports = new Map();
 
@@ -99,7 +99,11 @@ function handleNewMessage(event){
 
 	}else if(type === 'recv-connect-callback'){
 
-		recvTranportCallBack()
+		let recvTransportId = messageJson['content']
+
+		callback = recvTranportCallBacks.get(recvTransportId)
+
+		callback()
 
 	}else if(type === 'consume'){
 
@@ -295,7 +299,7 @@ function createRecvTransport(message){
 
 			sendMessage('recv-transport-connect', {transportId: transport.id, dtlsParameters: dtlsParameters})
 
-			recvTranportCallBack = callback
+			recvTranportCallBacks.set(transport.id, callback)
 
 		}catch(error){
 

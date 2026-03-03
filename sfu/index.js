@@ -346,7 +346,7 @@ async function connectTransport(message, transport){
 		type = 'recv-connect-callback'
 	}
 
-	sendMessage(type, '', remoteChannel)
+	sendMessage(type, message['content']['transportId'] , remoteChannel)
 
 }
 
