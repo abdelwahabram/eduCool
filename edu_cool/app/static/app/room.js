@@ -227,6 +227,15 @@ function createSendTransport(content){
 		}
 	})
 
+	sendTransport.on('connectionstatechange', (connectionState)=>{
+		console.log('state', connectionState)
+	})
+
+
+	sendTransport.on('icecandidateerror', (e)=>{
+		console.log('ice error', e)
+	})
+
 	produce()
 
 }

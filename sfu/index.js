@@ -58,11 +58,25 @@ let mediaCodecs = [
 
 function what_is_my_ip(){
 
-	/* return the container ip if run inside a container ,otherwise the host ip */
+	/* 
+	this is deprecated: using the interanl container ip won't work as the client 
+	browser will send the traffic to the client gateway which has no idea about the docker network
+	we need the private or public external ip of the sfu server not an internal one
+	our solutions is:
+	- use host network mode: can't resolve the service name ip without docker bridge net which will break other areas of the project
+	- use docker.host.internal: will be sent to the client as a literal string that the client dns can't resolve either
+	
+	- pass the server ip as an environment variaable during build, assigning a static ip or keeping dhcp server's
+	lease duration as long as possible or forever in the server gateway is recommended for local dev
+	for deployment, isp or the cloud service provider could provide a static isp
+
+	*/
+
+	/* [DEPRECATED]return the container ip if run inside a container ,otherwise the host ip */
 
 	const interfaces = os.networkInterfaces();
 
-	// console.log(interfaces)
+	console.log(interfaces)
 
 	for(const i of Object.values(interfaces)){
 		if (i['internal'] === false && i['family'] === 'IPv4'){
@@ -147,7 +161,7 @@ async function createWebRtcServer(){
 		{
 			protocol : 'udp',
 			ip       : '0.0.0.0',
-			announcedAddress: process.env.ANNOUNCEDIP || what_is_my_ip(),
+			announcedAddress: process.env.ANNOUNCEDIP,
 			port     : 20000
 		// set public ip for production, or private for dev
 
@@ -161,7 +175,7 @@ async function createWebRtcServer(){
 		{
 			protocol : 'tcp',
 			ip       : '0.0.0.0',
-			announcedAddress: process.env.ANNOUNCEDIP || what_is_my_ip(),
+			announcedAddress: process.env.ANNOUNCEDIP,
 			port     : 20000
 		}
     ]})
