@@ -234,7 +234,21 @@ let handleNewMessage = (event)=>{
 
 	}else if(messageJson['type'] === 'canConsume?'){
 
+		if (messageJson['content']['kind'] === 'both'){
+
+			let videoOptions = messageJson
+			videoOptions['content']['kind'] = 'video'
+			consume(videoOptions)
+
+			let audioOptions = messageJson
+			audioOptions['content']['kind'] = 'audio'
+			consume(audioOptions)
+
+		}else{
+
 		consume(messageJson)
+		}
+		
 	}else if(messageJson['type'] === 'resume'){
 
 		resume(messageJson['content'])

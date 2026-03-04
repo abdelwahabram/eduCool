@@ -28,6 +28,10 @@ let recvTransports = new Map();
 
 let connectedReceiver = new Map();
 
+let senders = new Set()
+
+let producedKinds = new Map()
+
 
 function connect(){
 
@@ -291,12 +295,20 @@ function requestRecvTransport(message){
 		return
 	}
 
-	if(connectedReceiver.has(id)){
+	if(senders.has(id)){
 
-		canConsume(connectedReceiver.get(id), id, message['kind'])
+		if (producedKinds.get(id) === null){
+			producedKinds.set(id, message['kind'])
+		}else if(producedKinds.get(id) !== message['kind']){
+			producedKinds.set(id, 'both')
+		}
+		// canConsume(connectedReceiver.get(id), id, message['kind'])
 		return
 	}
 
+	senders.add(id)
+
+	producedKinds.set(id, message['kind'])
 	sendMessage('recv-transport-request', message)
 }
 
@@ -335,18 +347,20 @@ function canConsume(recvTransportId, sendTransportId, kind){
 		rtpc: device.rtpCapabilities,
 		recvTransportId: recvTransportId,
 		sendTransportId: sendTransportId,
-		kind: kind
+		kind: producedKinds.get(sendTransportId)
 	}
 
-	console.log(content)
+	// console.log(content)
 	sendMessage('canConsume?', content)
+
+	producedKinds.set(sendTransportId, null)
 	
 }
 
 
 async function consume(message){
 
-	console.log(message)
+	// console.log(message)
 
 	let recvTransportId = message['recvTransportId']
 
