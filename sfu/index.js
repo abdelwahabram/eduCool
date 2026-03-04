@@ -16,6 +16,8 @@ let routers = new Map()
 
 let peersInRoom = new Map()
 
+let sendTransportsInRoom = new Map()
+
 let sendTransport = new Map()
 
 let producers = new Map();
@@ -232,7 +234,11 @@ let handleNewMessage = (event)=>{
 
 		consume(messageJson)
 	}else if(messageJson['type'] === 'resume'){
+
 		resume(messageJson['content'])
+
+	}else if(messageJson['type'] === 'peers-request'){
+		sendPeersList(messageJson)
 	}
 
 }
@@ -274,6 +280,8 @@ async function getRouter(room){
 	let router = await worker.createRouter({mediaCodecs,})
 
 	peersInRoom.set(room, new Set())
+
+	sendTransportsInRoom.set(room, new Set())
 
 	routers.set(room, router)
 
@@ -368,6 +376,8 @@ async function produce(message){
 	sendMessage('produce-callback', {id: producer.id}, remoteChannel)
 
 	notifyPeers(transport.id, producer.kind, message['room'])
+
+	sendTransportsInRoom.get(message['room']).add(transport.id)
 
 }
 
@@ -466,4 +476,17 @@ async function resume(consumerId){
 	console.log(consumer.id)
 
 	await consumer.resume()
+}
+
+function sendPeersList(message){
+	
+	let room = message['room']
+	
+	let remoteChannel = message['sender_channel']
+
+	let peersList = Array.from(sendTransportsInRoom.get(room))
+
+	console.log('p', peersList)
+
+	sendMessage('peers-list', peersList, remoteChannel)
 }

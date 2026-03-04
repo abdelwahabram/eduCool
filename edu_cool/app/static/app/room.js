@@ -109,6 +109,11 @@ function handleNewMessage(event){
 
 		consume(messageJson['content'])
 
+	}else if(type === 'peers-list'){
+
+		console.log(messageJson)
+
+		addPeers(messageJson['content'])
 	}
 }
 
@@ -160,7 +165,10 @@ function start(){
 
 function handleRTPC(content){
 
-	createDev(content).then(()=>{requestSendTransport()})
+	createDev(content).then(()=>{
+		requestSendTransport()
+		requestPreviousPeers()
+	})
 }
 
 
@@ -186,6 +194,10 @@ async function createDev(rtpc){
 function requestSendTransport(){
 
 	sendMessage('send-transport-request', '')
+}
+
+function requestPreviousPeers(){
+	sendMessage('peers-request', '')
 }
 
 function createSendTransport(content){
@@ -326,6 +338,7 @@ function canConsume(recvTransportId, sendTransportId, kind){
 		kind: kind
 	}
 
+	console.log(content)
 	sendMessage('canConsume?', content)
 	
 }
@@ -395,4 +408,21 @@ function createWrapper(recvTransportId, username = ''){
 	container.append(wrapper)
 
 	return {'video': video, 'audio': audio}
+}
+
+function addPeers(peersList){
+	console.log('p',peersList)
+	console.log('t', typeof(peersList))
+
+	for(let transportId of peersList.values()){
+
+		// if (senders.has(transportId)){
+		// 	continue
+		// }
+
+		requestRecvTransport({id: transportId, kind: 'video'})
+		requestRecvTransport({id: transportId, kind: 'audio'})
+	}
+
+
 }
