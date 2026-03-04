@@ -354,7 +354,9 @@ async function consume(message){
 
 	let consumer = await transport.consume(message)
 
-	let elements = createWrapper(recvTransportId)
+	let username = message['username']
+
+	let elements = createWrapper(recvTransportId, username)
 
 	const { track } = consumer;
 
@@ -386,7 +388,7 @@ function createWrapper(recvTransportId, username = ''){
 
 	let user = document.createElement('h2')
 
-	username.innerHTML = username
+	user.innerHTML = username
 
 	let audio = document.createElement('audio')
 	audio.id = 'audio-' + recvTransportId
@@ -401,7 +403,7 @@ function createWrapper(recvTransportId, username = ''){
 
 	wrapper.id = recvTransportId
 
-	wrapper.append(username, video, audio)
+	wrapper.append(user, video, audio)
 
 	let container = document.getElementsByClassName('videos-container')[0]
 

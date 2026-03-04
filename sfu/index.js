@@ -26,6 +26,8 @@ let recvTransport = new Map()
 
 let consumers = new Map()
 
+let usernameOf = new Map()
+
 let mediaCodecs = [
 	{
 		kind: "video",
@@ -324,6 +326,8 @@ async function createSendTransport(content){
 
 	sendTransport.set(transport.id, transport)
 
+	usernameOf.set(transport.id, content['user_name'])
+
 	let transportData = {
 		id: transport.id,
 		iceParameters: transport.iceParameters,
@@ -459,7 +463,8 @@ async function consume(message){
 		producerId: consumer.producerId,
 		kind: consumer.kind,
 		rtpParameters: consumer.rtpParameters,
-		recvTransportId: message['content']['recvTransportId']
+		recvTransportId: message['content']['recvTransportId'],
+		username: usernameOf.get(sendTransportId)
 	}
 
 	consumers.set(consumer.id, consumer)
