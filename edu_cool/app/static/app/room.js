@@ -169,7 +169,10 @@ function handleRTPC(content){
 
 	createDev(content).then(()=>{
 		requestSendTransport()
-		requestPreviousPeers()
+		// requestPreviousPeers()
+		/*
+			if we started sending requestRecvTransport() before creating a sendTransport we can't compare the id of the sendTransport
+		*/
 	})
 }
 
@@ -207,6 +210,8 @@ function createSendTransport(content){
 	try{
 
 		sendTransport = device.createSendTransport(content)
+
+		requestPreviousPeers()
 
 	}catch(error){
 		console.log(error)
@@ -338,7 +343,7 @@ function createRecvTransport(message){
 		
 		canConsume(transport.id, message['sendTransportId'], kind)
 
-		producedKinds.get(message['sendTransportId'].discard(kind))
+		producedKinds.get(message['sendTransportId'].delete(kind))
 	}
 
 }
