@@ -115,8 +115,6 @@ function handleNewMessage(event){
 
 	}else if(type === 'peers-list'){
 
-		console.log(messageJson)
-
 		addPeers(messageJson['content'])
 	}
 }
@@ -297,18 +295,17 @@ function requestRecvTransport(message){
 
 	if(senders.has(id)){
 
-		if (producedKinds.get(id) === null){
-			producedKinds.set(id, message['kind'])
-		}else if(producedKinds.get(id) !== message['kind']){
-			producedKinds.set(id, 'both')
-		}
-		// canConsume(connectedReceiver.get(id), id, message['kind'])
+		producedKinds.get(id).add(message['kind'])
+
 		return
 	}
 
 	senders.add(id)
 
-	producedKinds.set(id, message['kind'])
+	producedKinds.set(id, new Set())
+
+	producedKinds.get(id).add(message['kind'])
+
 	sendMessage('recv-transport-request', message)
 }
 
@@ -334,8 +331,15 @@ function createRecvTransport(message){
 	recvTransports.set(transport.id, transport)
 
 	connectedReceiver.set(message['sendTransportId'], transport.id)
-	console.log('created', message['kind'])
-	canConsume(transport.id, message['sendTransportId'], message['kind'])
+
+	let kind = producedKinds.get(message['sendTransportId'])
+
+	for(let kind of producedKinds.get(message['sendTransportId'])){
+		
+		canConsume(transport.id, message['sendTransportId'], kind)
+
+		producedKinds.get(message['sendTransportId'].discard(kind))
+	}
 
 }
 
@@ -347,20 +351,15 @@ function canConsume(recvTransportId, sendTransportId, kind){
 		rtpc: device.rtpCapabilities,
 		recvTransportId: recvTransportId,
 		sendTransportId: sendTransportId,
-		kind: producedKinds.get(sendTransportId)
+		kind: kind
 	}
 
-	// console.log(content)
 	sendMessage('canConsume?', content)
-
-	producedKinds.set(sendTransportId, null)
 	
 }
 
 
 async function consume(message){
-
-	// console.log(message)
 
 	let recvTransportId = message['recvTransportId']
 
@@ -374,26 +373,19 @@ async function consume(message){
 
 	const { track } = consumer;
 
-	// if (message['kind'] === 'video'){
-	// 	elements[0].srcObject = track
-	// }
-
-	console.log(track)
-
-	console.log(message['kind'])
-	console.log(elements[message['kind']])
 	elements[message['kind']].srcObject = new MediaStream([ track ]);
 
 	sendMessage('resume', consumer.id)
 
-
 }
+
 
 function createWrapper(recvTransportId, username = ''){
 
 	console.log('creating elms')
 
 	if (document.getElementById(recvTransportId) !== null){
+		console.log('already exists')
 		let audio = document.getElementById('audio-' + recvTransportId)
 		let video = document.getElementById('video-' + recvTransportId)
 
@@ -426,19 +418,14 @@ function createWrapper(recvTransportId, username = ''){
 	return {'video': video, 'audio': audio}
 }
 
+
 function addPeers(peersList){
-	console.log('p',peersList)
-	console.log('t', typeof(peersList))
 
 	for(let transportId of peersList.values()){
 
-		// if (senders.has(transportId)){
-		// 	continue
-		// }
-
 		requestRecvTransport({id: transportId, kind: 'video'})
+
 		requestRecvTransport({id: transportId, kind: 'audio'})
 	}
-
 
 }

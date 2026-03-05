@@ -248,7 +248,7 @@ let handleNewMessage = (event)=>{
 
 		consume(messageJson)
 		}
-		
+
 	}else if(messageJson['type'] === 'resume'){
 
 		resume(messageJson['content'])
@@ -256,6 +256,8 @@ let handleNewMessage = (event)=>{
 	}else if(messageJson['type'] === 'peers-request'){
 		sendPeersList(messageJson)
 	}
+
+	// this if else chaos could be orgainzed by storing the type, function in a hashmap, or maybe using a strategy design pattern
 
 }
 
@@ -412,8 +414,8 @@ function saveProducer(transportId, producer){
 
 function notifyPeers(transportId, kind, room){
 
-	console.log(peersInRoom.get(room))
 	for( let peer of peersInRoom.get(room)){
+
 		sendMessage('new-peer', {id: transportId, kind: kind}, peer)
 	}
 
@@ -436,7 +438,6 @@ async function createRecvTransport(message){
 		iceCandidates: transport.iceCandidates,
 		dtlsParameters: transport.dtlsParameters, 
 		sendTransportId: message['content']['id'],
-		kind: message['content']['kind']
 	}
 
 	sendMessage('recv-transport-created', transportData, remoteChannel)
@@ -453,7 +454,6 @@ async function consume(message){
 
 	let producer = producers.get(sendTransportId)[kind]
 	
-	console.log('consuming', producer.kind, producer.id)
 	let router = await getRouter(message['room'])
 
 	let consumerOptions = {producerId: producer.id, rtpCapabilities: message['content']['rtpc'], paused: true}
@@ -488,11 +488,7 @@ async function consume(message){
 
 async function resume(consumerId){
 
-	console.log('resuming')
-
 	let consumer = consumers.get(consumerId)
-
-	console.log(consumer.id)
 
 	await consumer.resume()
 }
@@ -504,8 +500,6 @@ function sendPeersList(message){
 	let remoteChannel = message['sender_channel']
 
 	let peersList = Array.from(sendTransportsInRoom.get(room))
-
-	console.log('p', peersList)
 
 	sendMessage('peers-list', peersList, remoteChannel)
 }
