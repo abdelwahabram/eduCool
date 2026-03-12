@@ -28,6 +28,8 @@ let consumers = new Map()
 
 let usernameOf = new Map()
 
+let roomOfSendTransport = new Map()
+
 let mediaCodecs = [
 	{
 		kind: "video",
@@ -351,11 +353,19 @@ async function createSendTransport(content){
 
 	let transport = await createTransport(content['room'])
 
+	transport.observer.on('close', ()=>{
+
+		notifySendTransportClosed(transport.id)
+
+	})
+
 	let remoteChannel = content['sender_channel']
 
 	sendTransport.set(transport.id, transport)
 
 	usernameOf.set(transport.id, content['user_name'])
+
+	roomOfSendTransport.set(transport.id, content['room'])
 
 	let transportData = {
 		id: transport.id,
@@ -428,6 +438,11 @@ function saveProducer(transportId, producer){
 function notifyPeers(transportId, kind, room){
 
 	sendGroupMessage('new-peer', {id: transportId, kind: kind}, room)
+}
+
+
+function notifySendTransportClosed(transportId){
+	sendGroupMessage('sendTransportClosed', transportId, roomOfSendTransport.get(transportId))
 }
 
 

@@ -116,6 +116,9 @@ function handleNewMessage(event){
 	}else if(type === 'peers-list'){
 
 		addPeers(messageJson['content'])
+
+	}else if(type === 'sendTransportClosed'){
+		removePeer(messageJson)
 	}
 }
 
@@ -437,4 +440,24 @@ function addPeers(peersList){
 		requestRecvTransport({id: transportId, kind: 'audio'})
 	}
 
+}
+
+
+function removePeer(message){
+
+	let sendTransportId = message['content']
+
+	let recvTransportId = connectedReceiver.get(sendTransportId)
+
+	if(recvTransportId === null){
+		return
+	}
+
+	recvTransports.get(recvTransportId).close()
+
+	let wrapper = document.getElementById(recvTransportId)
+
+	// console.log(wrapper)
+
+	wrapper.remove()
 }
