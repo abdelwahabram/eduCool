@@ -292,6 +292,10 @@ async function produce(){
 
 function requestRecvTransport(message){
 
+	if(sendTransport === null){
+		return
+	}
+
 	let id = message['id']
 
 	if( id === sendTransport.id){
