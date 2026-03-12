@@ -75,16 +75,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
             return
 
-        if message.get(receiver_channel, None) != None:
+        if message.get('receiver_channel', None) != None:
 
             await self.channel_layer.send(
                 message['receiver_channel'], {"type": "chat.message", "message": message}
             )
 
         elif message.get('group', None) != None:
-
-            if not self.scope['is_sfu_group']:
-                return
 
             await self.channel_layer.group_send(
                 message['group'], {"type": "chat.message", "message": message}
