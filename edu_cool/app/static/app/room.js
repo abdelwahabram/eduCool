@@ -457,7 +457,24 @@ function removePeer(message){
 
 	let wrapper = document.getElementById(recvTransportId)
 
-	// console.log(wrapper)
-
 	wrapper.remove()
+
+	removeSendTransport(sendTransportId)
+
+}
+
+
+function removeRecvTransport(sendTransportId){
+	
+	let recvTransportId = connectedReceiver.get(sendTransportId)
+
+	recvTranportCallBacks.delete(recvTransportId)
+
+	recvTransports.delete(recvTransportId)
+
+	senders.delete(sendTransportId)
+
+	producedKinds.delete(sendTransportId)
+
+	connectedReceiver.delete(sendTransportId)
 }

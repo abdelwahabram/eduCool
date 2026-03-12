@@ -356,6 +356,7 @@ async function createSendTransport(content){
 	transport.observer.on('close', ()=>{
 
 		notifySendTransportClosed(transport.id)
+		removeSendTransport(transport.id)
 
 	})
 
@@ -446,9 +447,30 @@ function notifySendTransportClosed(transportId){
 }
 
 
+function removeSendTransport(transportId){
+	
+	let room = roomOfSendTransport.get(transportId)
+
+	sendTransportsInRoom.get(room).delete(transportId)
+
+	sendTransport.delete(transportId)
+
+	producers.delete(sendTransportId)
+
+	usernameOf.delete(sendTransportId)
+
+	roomOfSendTransport.delete(sendTransportId)
+
+}
+
+
 async function createRecvTransport(message){
 
 	let transport = await createTransport(message['room'])
+
+	transport.observer.on('close', ()=>{
+		recvTransport.delete(transport.id)
+	})
 
 	recvTransport.set(transport.id, transport)
 	// save the obj by id to connect with client transport and create consumer
@@ -495,6 +517,11 @@ async function consume(message){
 	let transport = recvTransport.get(message['content']['recvTransportId'])
 
 	let consumer = await transport.consume(consumerOptions)
+
+	consumer.observer.on('close', ()=>{
+
+		consumers.delete(consumer.id)
+	})
 
 	let clientConsumerOptions = {
 		id: consumer.id,
