@@ -14,7 +14,7 @@ let ws;
 
 let routers = new Map()
 
-let peersInRoom = new Map()
+//let peersInRoom = new Map()
 
 let sendTransportsInRoom = new Map()
 
@@ -275,13 +275,26 @@ function sendMessage(type, content, remoteChannel = ''){
 };
 
 
+function sendGroupMessage(type, content, room){
+
+	console.log('sending: ...', type)
+
+    let jsonMessage = JSON.stringify({'message':
+        {type: type, content:content, group: room}
+    })
+
+    ws.send(jsonMessage)
+
+};
+
+
 async function handleRtpRequest(message){
 
 	let remoteChannel = message['sender_channel']
 
 	let router = await getRouter(message['room'])
 
-	peersInRoom.get(message['room']).add(remoteChannel)
+	// peersInRoom.get(message['room']).add(remoteChannel)
 
 	sendMessage('RTPC', router.rtpCapabilities, remoteChannel)
 
@@ -297,7 +310,7 @@ async function getRouter(room){
 
 	let router = await worker.createRouter({mediaCodecs,})
 
-	peersInRoom.set(room, new Set())
+	//peersInRoom.set(room, new Set())
 
 	sendTransportsInRoom.set(room, new Set())
 
@@ -414,11 +427,7 @@ function saveProducer(transportId, producer){
 
 function notifyPeers(transportId, kind, room){
 
-	for( let peer of peersInRoom.get(room)){
-
-		sendMessage('new-peer', {id: transportId, kind: kind}, peer)
-	}
-
+	sendGroupMessage('new-peer', {id: transportId, kind: kind}, room)
 }
 
 
