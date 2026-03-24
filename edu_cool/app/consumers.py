@@ -20,6 +20,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
         
         if self.room_name is None and self.scope['user'].is_superuser and self.scope['user'].username == get_docker_secret('server_cred_username', 'admin'):
             
+            self.scope['is_sfu'] = True
+
             await self.channel_layer.group_add(self.sfu_group, self.channel_name)
             
             await self.accept()
@@ -42,6 +44,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
             raise DenyConnection('only tutors and students could join this rrom')
 
+        await self.channel_layer.group_add(self.room_name, self.channel_name)
+
         await self.accept()
 
 
@@ -58,16 +62,29 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         message['sender_channel'] = self.channel_name
 
-        if not message['receiver_channel']:
+
+        if not self.scope.get('is_sfu', None):
+
+            message['user_name'] = self.scope['user'].username
+
+            message['room'] = self.room_name
 
             await self.channel_layer.group_send(
                 self.sfu_group, {"type": "chat.message", "message": message}
             )
 
-        else:
+            return
+
+        if message.get('receiver_channel', None) != None:
 
             await self.channel_layer.send(
                 message['receiver_channel'], {"type": "chat.message", "message": message}
+            )
+
+        elif message.get('group', None) != None:
+
+            await self.channel_layer.group_send(
+                message['group'], {"type": "chat.message", "message": message}
             )
 
 

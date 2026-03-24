@@ -4,6 +4,94 @@ import axios from 'axios';
 
 import { secrets } from "docker-secret";
 
+import * as mediasoup from "mediasoup";
+
+import os from 'node:os';
+
+// import os;
+
+let ws;
+
+let routers = new Map()
+
+//let peersInRoom = new Map()
+
+let sendTransportsInRoom = new Map()
+
+let sendTransport = new Map()
+
+let producers = new Map();
+
+let recvTransport = new Map()
+
+let consumers = new Map()
+
+let usernameOf = new Map()
+
+let roomOfSendTransport = new Map()
+
+let mediaCodecs = [
+	{
+		kind: "video",
+		mimeType: "video/H264",
+
+		/*
+			// h264 over vp9 or 8 for video conference
+			// as the higher the compression rate(in vp), the longer the encoding time=> higher latency
+			// but if we need to pay a royalty fee, then go for vp8,9 but this is up to the browser or the os if i'm not mistaken
+			// I hope I'm not. is this serious?! what's the worst thing that can happen? they're gonna sue me???
+			"your honor, it's just a side project"
+		*/
+
+		clockRate: 90000,
+		parameters:{
+			"profile-level-id": "42e01f",
+			// 42e0 represents h264 baseline profile, it's simple, require less processing and it has low latency which is good for video conference
+			"packetization-mode": 1,
+			"level-asymmetry-allowed": 1
+		}
+	},
+
+	{
+		kind: "audio",
+		mimeType: "audio/opus",
+		clockRate: 48000,
+		channels: 2
+
+	}
+]
+
+
+function what_is_my_ip(){
+
+	/* 
+	this is deprecated: using the interanl container ip won't work as the client 
+	browser will send the traffic to the client gateway which has no idea about the docker network
+	we need the private or public external ip of the sfu server not an internal one
+	our solutions is:
+	- use host network mode: can't resolve the service name ip without docker bridge net which will break other areas of the project
+	- use docker.host.internal: will be sent to the client as a literal string that the client dns can't resolve either
+	
+	- pass the server ip as an environment variaable during build, assigning a static ip or keeping dhcp server's
+	lease duration as long as possible or forever in the server gateway is recommended for local dev
+	for deployment, isp or the cloud service provider could provide a static isp
+
+	*/
+
+	/* [DEPRECATED]return the container ip if run inside a container ,otherwise the host ip */
+
+	const interfaces = os.networkInterfaces();
+
+	console.log(interfaces)
+
+	for(const i of Object.values(interfaces)){
+		if (i['internal'] === false && i['family'] === 'IPv4'){
+			return i['address']
+		}
+	}
+
+}
+
 
 axios.post('http://django:8000/login/', {username: secrets.server_cred_username, 
 	password: secrets.server_cred_pass}).then(function (response) {
@@ -20,7 +108,12 @@ axios.post('http://django:8000/login/', {username: secrets.server_cred_username,
 
 		return cookies
 
-	}).then((cookies)=>{let ws = connect(cookies)})
+	}).then((cookies)=>{ws = connect(cookies)})
+
+
+let worker = await createWorker()
+
+let webRtcServer = await createWebRtcServer()
 
 
 function connect (cookies){
@@ -55,6 +148,48 @@ function connect (cookies){
 }
 
 
+async function createWorker(){
+
+	const worker = await mediasoup.createWorker()
+
+	worker.on("died", (error) =>{
+		console.error("mediasoup worker died!: %o", error);
+	});
+
+	return worker
+
+}
+
+
+async function createWebRtcServer(){
+
+	const wrtcServer = await worker.createWebRtcServer({listenInfos:[
+		{
+			protocol : 'udp',
+			ip       : '0.0.0.0',
+			announcedAddress: process.env.ANNOUNCEDIP,
+			port     : 20000
+		// set public ip for production, or private for dev
+
+		// we can't use service name as it will be sent to the client as a literal string
+		// during ice exchange to allow p2p communication behind nat, we need to send an ip
+
+		// also we can't use "127.0.0.1" , as some browsers(ff) 
+		// don't listen to it during ice exchange
+		},
+
+		{
+			protocol : 'tcp',
+			ip       : '0.0.0.0',
+			announcedAddress: process.env.ANNOUNCEDIP,
+			port     : 20000
+		}
+    ]})
+
+	return wrtcServer
+}
+
+
 function parseCookie(header){
 
 	let keyValue = header.split(';')[0] + ";"
@@ -66,6 +201,66 @@ function parseCookie(header){
 
 let handleNewMessage = (event)=>{
 	console.log('new msg')
+
+	let messageJson = JSON.parse(event.data)['message']
+
+	console.log(messageJson['type'])
+
+	if (messageJson['type'] === 'router-rtp-request'){
+
+		handleRtpRequest(messageJson)
+
+	}else if(messageJson['type'] === 'send-transport-request'){
+
+		createSendTransport(messageJson)
+
+	}else if(messageJson['type'] === 'transport-connect'){
+
+		let transport = sendTransport.get(messageJson['content']['transportId'])
+
+		connectTransport(messageJson, transport)
+
+	}else if(messageJson['type'] === 'transport-produce'){
+
+		produce(messageJson)
+
+	}else if(messageJson['type'] === 'recv-transport-request'){
+
+		createRecvTransport(messageJson)
+
+	}else if(messageJson['type'] === 'recv-transport-connect'){
+
+		let transport = recvTransport.get(messageJson['content']['transportId'])
+
+		connectTransport(messageJson, transport)
+
+	}else if(messageJson['type'] === 'canConsume?'){
+
+		if (messageJson['content']['kind'] === 'both'){
+
+			let videoOptions = messageJson
+			videoOptions['content']['kind'] = 'video'
+			consume(videoOptions)
+
+			let audioOptions = messageJson
+			audioOptions['content']['kind'] = 'audio'
+			consume(audioOptions)
+
+		}else{
+
+		consume(messageJson)
+		}
+
+	}else if(messageJson['type'] === 'resume'){
+
+		resume(messageJson['content'])
+
+	}else if(messageJson['type'] === 'peers-request'){
+		sendPeersList(messageJson)
+	}
+
+	// this if else chaos could be orgainzed by storing the type, function in a hashmap, or maybe using a strategy design pattern
+
 }
 
 
@@ -82,3 +277,280 @@ function sendMessage(type, content, remoteChannel = ''){
 };
 
 
+function sendGroupMessage(type, content, room){
+
+	console.log('sending: ...', type)
+
+    let jsonMessage = JSON.stringify({'message':
+        {type: type, content:content, group: room}
+    })
+
+    ws.send(jsonMessage)
+
+};
+
+
+async function handleRtpRequest(message){
+
+	let remoteChannel = message['sender_channel']
+
+	let router = await getRouter(message['room'])
+
+	// peersInRoom.get(message['room']).add(remoteChannel)
+
+	sendMessage('RTPC', router.rtpCapabilities, remoteChannel)
+
+}
+
+
+async function getRouter(room){
+
+	if (routers.has(room)){
+
+		return routers.get(room)
+	}
+
+	let router = await worker.createRouter({mediaCodecs,})
+
+	//peersInRoom.set(room, new Set())
+
+	sendTransportsInRoom.set(room, new Set())
+
+	routers.set(room, router)
+
+	return router
+
+}
+
+
+async function createTransport(room){
+
+	let router = await getRouter(room)
+
+	let transport = await router.createWebRtcTransport({webRtcServer : webRtcServer})
+
+	transport.on('icestatechange', (iceState)=>{
+		if(iceState === "disconnected"){
+			console.log("ice state: disconnected, transport will be closed")
+			transport.close()
+		}
+	})
+
+	transport.on('dtlsstatechange', (dtlsState)=>{
+
+		if(dtlsState === "closed"){
+			console.log("dtls is closed, transport will be closed")
+			transport.close()
+		}
+	})
+
+	return transport
+
+}
+
+
+async function createSendTransport(content){
+
+	let transport = await createTransport(content['room'])
+
+	transport.observer.on('close', ()=>{
+
+		notifySendTransportClosed(transport.id)
+		removeSendTransport(transport.id)
+
+	})
+
+	let remoteChannel = content['sender_channel']
+
+	sendTransport.set(transport.id, transport)
+
+	usernameOf.set(transport.id, content['user_name'])
+
+	roomOfSendTransport.set(transport.id, content['room'])
+
+	let transportData = {
+		id: transport.id,
+		iceParameters: transport.iceParameters,
+		iceCandidates: transport.iceCandidates,
+		dtlsParameters: transport.dtlsParameters,
+		sctpParameters: transport.sctpParameters
+	}
+
+	sendMessage('send-transport-created', transportData, remoteChannel)
+
+}
+
+
+async function connectTransport(message, transport){
+
+	let remoteChannel = message['sender_channel']
+
+	await transport.connect(message['content'])
+
+	let type
+
+	if(message['type'] === 'transport-connect'){
+
+		type = 'connect-callback'
+
+	}else{
+
+		type = 'recv-connect-callback'
+	}
+
+	sendMessage(type, message['content']['transportId'] , remoteChannel)
+
+}
+
+
+async function produce(message){
+
+	let remoteChannel = message['sender_channel']
+
+	let transport = sendTransport.get(message['content']['transportId'])
+
+	// console.log('producing', message['content'])
+	
+	let producer = await transport.produce(message['content'])
+
+	// producers.set(transport.id, producer)
+
+	saveProducer(transport.id, producer)
+
+	sendMessage('produce-callback', {id: producer.id}, remoteChannel)
+
+	notifyPeers(transport.id, producer.kind, message['room'])
+
+	sendTransportsInRoom.get(message['room']).add(transport.id)
+
+}
+
+
+function saveProducer(transportId, producer){
+
+	if(!producers.has(transportId)){
+		producers.set(transportId, {'audio': null, 'video': null})
+	}
+
+	producers.get(transportId)[producer.kind] = producer
+}
+
+
+function notifyPeers(transportId, kind, room){
+
+	sendGroupMessage('new-peer', {id: transportId, kind: kind}, room)
+}
+
+
+function notifySendTransportClosed(transportId){
+	sendGroupMessage('sendTransportClosed', transportId, roomOfSendTransport.get(transportId))
+}
+
+
+function removeSendTransport(transportId){
+	
+	let room = roomOfSendTransport.get(transportId)
+
+	sendTransportsInRoom.get(room).delete(transportId)
+
+	sendTransport.delete(transportId)
+
+	producers.delete(sendTransportId)
+
+	usernameOf.delete(sendTransportId)
+
+	roomOfSendTransport.delete(sendTransportId)
+
+}
+
+
+async function createRecvTransport(message){
+
+	let transport = await createTransport(message['room'])
+
+	transport.observer.on('close', ()=>{
+		recvTransport.delete(transport.id)
+	})
+
+	recvTransport.set(transport.id, transport)
+	// save the obj by id to connect with client transport and create consumer
+
+	let remoteChannel = message['sender_channel']
+
+	let transportData = {
+
+		id: transport.id,
+		iceParameters: transport.iceParameters,
+		iceCandidates: transport.iceCandidates,
+		dtlsParameters: transport.dtlsParameters, 
+		sendTransportId: message['content']['id'],
+	}
+
+	sendMessage('recv-transport-created', transportData, remoteChannel)
+}
+
+
+async function consume(message){
+
+	let remoteChannel = message['sender_channel']
+
+	let sendTransportId = message['content']['sendTransportId']
+
+	let kind = message['content']['kind']
+
+	let producer = producers.get(sendTransportId)[kind]
+	
+	let router = await getRouter(message['room'])
+
+	let consumerOptions = {producerId: producer.id, rtpCapabilities: message['content']['rtpc'], paused: true}
+
+	if(!router.canConsume(consumerOptions)){
+
+		console.log(remoteChannel, 'can not consume media from ', sendTransportId )
+
+		sendMessage('device can not consume produced media', '', remoteChannel)
+
+		return
+
+	}
+
+	let transport = recvTransport.get(message['content']['recvTransportId'])
+
+	let consumer = await transport.consume(consumerOptions)
+
+	consumer.observer.on('close', ()=>{
+
+		consumers.delete(consumer.id)
+	})
+
+	let clientConsumerOptions = {
+		id: consumer.id,
+		producerId: consumer.producerId,
+		kind: consumer.kind,
+		rtpParameters: consumer.rtpParameters,
+		recvTransportId: message['content']['recvTransportId'],
+		username: usernameOf.get(sendTransportId)
+	}
+
+	consumers.set(consumer.id, consumer)
+
+	sendMessage('consume', clientConsumerOptions, remoteChannel)
+}
+
+async function resume(consumerId){
+
+	let consumer = consumers.get(consumerId)
+
+	await consumer.resume()
+}
+
+function sendPeersList(message){
+	
+	let room = message['room']
+	
+	let remoteChannel = message['sender_channel']
+
+	let peersList = Array.from(sendTransportsInRoom.get(room))
+
+	sendMessage('peers-list', peersList, remoteChannel)
+}

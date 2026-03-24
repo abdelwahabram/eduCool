@@ -27,13 +27,21 @@ services:
 
     depends_on:
       - redis
-    
+
     healthcheck:
       test: ["CMD-SHELL", "wget --spider http://django:8000/"]
+      interval: 90m
+      start_period: 1m
+      start_interval: 10s
 
 
   sfu:
     build: ./sfu
+
+    ports:
+      - "20000:20000"
+    env_file:
+      - ./sfu/.env
 
     volumes:
       - ./sfu:/app
