@@ -459,12 +459,12 @@ function removePeer(message){
 
 	wrapper.remove()
 
-	removeSendTransport(sendTransportId)
+	removeRecvTransportOf(sendTransportId)
 
 }
 
 
-function removeRecvTransport(sendTransportId){
+function removeRecvTransportOf(sendTransportId){
 	
 	let recvTransportId = connectedReceiver.get(sendTransportId)
 
