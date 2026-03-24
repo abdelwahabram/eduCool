@@ -40,6 +40,8 @@ services:
 
     ports:
       - "20000:20000"
+    env_file:
+      - ./sfu/.env
 
     volumes:
       - ./sfu:/app
