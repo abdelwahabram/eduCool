@@ -4,7 +4,7 @@ import * as mediasoupClient from "mediasoup-client";
 
 const mediaSpecs = {
   audio: true,
-  video: { facingMode: "user", width: 250, height: 200 },
+  video: { facingMode: "user", width: { min: 1024, ideal: 1280, max: 1920 }, height: { min: 576, ideal: 720, max: 1080 } , resizeMode: "crop-and-scale"},
 };
 
 let audioProducerOptions = {};
