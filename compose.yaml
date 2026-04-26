@@ -1,11 +1,65 @@
 services:
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+
   django:
-    build: .
+
+    build: 
+      # ./edu_cool
+      secrets: 
+        - server_cred_username
+        - server_cred_pass
+      context: ./edu_cool
 
     ports:
       - "8000:8000"
     env_file:
-      - .env
+      - ./edu_cool/.env
 
     volumes:
-      - .:/app
+      - ./edu_cool:/app
+      - /app/app/static/
+      - /app/node_modules
+      - /app/.venv
+
+    depends_on:
+      - redis
+
+    healthcheck:
+      test: ["CMD-SHELL", "wget --spider http://django:8000/"]
+      interval: 90m
+      start_period: 1m
+      start_interval: 10s
+
+
+  sfu:
+    build: ./sfu
+
+    ports:
+      - "20000:20000"
+    env_file:
+      - ./sfu/.env
+
+    volumes:
+      - ./sfu:/app
+      - /app/node_modules
+
+    depends_on:
+      django:
+        condition: service_healthy
+
+    secrets:
+      - server_cred_username
+      - server_cred_pass
+
+
+secrets:
+
+  server_cred_username:
+    file: ./secret0.txt
+
+  server_cred_pass:
+    file: ./secret1.txt

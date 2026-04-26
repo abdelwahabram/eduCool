@@ -1,0 +1,26 @@
+{
+  "name": "app",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "msbundle": "esbuild ./app/static/app/room.js --bundle --minify --outfile=./app/static/app/out.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/abdelwahabram/eduCool.git"
+  },
+  "keywords": [],
+  "author": "H.I agen- Human Intelligence",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/abdelwahabram/eduCool/issues"
+  },
+  "homepage": "https://github.com/abdelwahabram/eduCool#readme",
+  "dependencies": {
+    "esbuild": "^0.27.2",
+    "mediasoup-client": "^3.18.3"
+  }
+}

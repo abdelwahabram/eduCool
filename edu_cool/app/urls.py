@@ -28,6 +28,8 @@ urlpatterns = [
     
     re_path(r'^comments/(?P<pk>\d+)/?$', views.CommentViewSet.as_view({'get': 'retrieve'}), name='comment-detail'),
     
+    re_path(r'^rooms/(?P<pk>\d+)/?$', views.RoomsView.as_view(), name='rooms'),
+    
     path('', include(main_router.urls)),
 
     path('login/', views.LogInView.as_view(), name = "login"),
