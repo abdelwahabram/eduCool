@@ -22,18 +22,10 @@ ENV PYTHONUNBUFFERED=1
 
 EXPOSE 8000
 
-RUN python3 manage.py makemigrations
-
-RUN python3 manage.py migrate
-
-# RUN --mount=type=secret,id=server_cred_username \
-# 	--mount=type=secret,id=server_cred_pass \
-# 	python3 manage.py createsuperuser --noinput --username server_cred_username --password server_cred_pass
-
-RUN cat create_sfu_admin.py | python3 manage.py shell
-
 RUN npm run msbundle
 
-CMD [ "python3", "manage.py", "runserver" , "0.0.0.0:8000"]
+ADD entrypoint.sh /entrypoint.sh
 
-# fell into dependency hell for a while but 've handled it
+RUN chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
