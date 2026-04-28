@@ -350,14 +350,12 @@ class RefreshTokenView(TokenRefreshView):
 
 		serializer = self.get_serializer(data = {"refresh": refresh_token})
 			
-		serializer.is_valid(raise_exceptions=True)
+		serializer.is_valid(raise_exception=True)
 
 		response = Response({}, status.HTTP_200_OK)
 
-		access_token = serializer.validated_data['access_token']
+		access_token = serializer.validated_data['access']
 		
-		refresh_token = serializer.validated_data['refresh_token']
-
 		set_access_cookie(response, str(access_token))
 		
 		set_refresh_cookie(response, str(refresh_token))
