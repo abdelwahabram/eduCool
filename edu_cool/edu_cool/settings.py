@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt.token_blacklist',
     'djoser',
     'app',
+    'drf_spectacular',
 ]
 
 MIDDLEWARE = [
@@ -161,7 +162,9 @@ REST_FRAMEWORK = {
         'app.authenticate.JWTCookieAuth',
 		
 		# 'rest_framework_simplejwt.authentication.JWTAuthentication',
-	)
+	),
+
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 
 }
 
