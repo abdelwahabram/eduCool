@@ -350,7 +350,7 @@ function createRecvTransport(message){
 		
 		canConsume(transport.id, message['sendTransportId'], kind)
 
-		producedKinds.get(message['sendTransportId'].delete(kind))
+		producedKinds.get(message['sendTransportId']).delete(kind)
 	}
 
 }

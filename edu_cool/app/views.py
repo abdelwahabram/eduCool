@@ -225,12 +225,16 @@ class EnrollmentViewSet(viewsets.ModelViewSet):
 
 	def get_permissions(self):
 
+		permission_classes = []
+
 		if self.action == 'retrieve':
 			permission_classes = [permissions.IsEnrollmentTutor | permissions.IsEnrollmentStudent]
 
 		if self.action == 'list':
 			permission_classes = [permissions.IsEnrollmentTutor]
-		# return statement hereeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
+
+		return permission_classes
+
 
 	def perform_create(self, serializer):
 
@@ -245,7 +249,7 @@ class EnrollmentViewSet(viewsets.ModelViewSet):
 		if course.tutor == self.request.user:
 			raise PermissionDenied('A tutor can\'t be student')
 
-		if course.students.objects.filter(id = self.request.user.id):
+		if course.students.filter(id = self.request.user.id):
 			raise PermissionDenied('already joined')
 			
 			# NOTE: A better way to handle this is to update the model making student and course unique together
@@ -346,14 +350,12 @@ class RefreshTokenView(TokenRefreshView):
 
 		serializer = self.get_serializer(data = {"refresh": refresh_token})
 			
-		serializer.is_valid(raise_exceptions=True)
+		serializer.is_valid(raise_exception=True)
 
 		response = Response({}, status.HTTP_200_OK)
 
-		access_token = serializer.validated_data['access_token']
+		access_token = serializer.validated_data['access']
 		
-		refresh_token = serializer.validated_data['refresh_token']
-
 		set_access_cookie(response, str(access_token))
 		
 		set_refresh_cookie(response, str(refresh_token))

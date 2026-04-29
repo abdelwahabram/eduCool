@@ -167,7 +167,7 @@ async function createWebRtcServer(){
 		{
 			protocol : 'udp',
 			ip       : '0.0.0.0',
-			announcedAddress: process.env.ANNOUNCEDIP,
+			announcedAddress: process.env.ANNOUNCEDIP || '127.0.0.1',
 			port     : 20000
 		// set public ip for production, or private for dev
 
@@ -181,7 +181,7 @@ async function createWebRtcServer(){
 		{
 			protocol : 'tcp',
 			ip       : '0.0.0.0',
-			announcedAddress: process.env.ANNOUNCEDIP,
+			announcedAddress: process.env.ANNOUNCEDIP || '127.0.0.1',
 			port     : 20000
 		}
     ]})
