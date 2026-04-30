@@ -11,10 +11,12 @@ educ~~ation~~ + ~~sch~~ool = educool
 currently archived, untill further notice, the core APIs work fine, the users can create/enroll in courses, post, comment, or join video conference rooms
 
 ## Project Screen Shot(s)
-later
+
+![Screenshot of a meeting betweeen the good, the bad & the ugly from the demo](/docs/readme_screenshots/Screenshot_from_2026-04-22_00-02-27.png)
 
 ## Demo video:
-later
+
+https://youtu.be/AG30CxacU0U
 
 ## Installation and Setup Instructions
 
