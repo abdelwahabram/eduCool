@@ -16,10 +16,14 @@ Django==5.2.3
 djangorestframework==3.16.0
 djangorestframework_simplejwt==5.5.0
 djoser==2.3.1
+drf-spectacular==0.29.0
 get-docker-secret==2.0.0
 hyperlink==21.0.0
 idna==3.10
 Incremental==24.11.0
+inflection==0.5.1
+jsonschema==4.26.0
+jsonschema-specifications==2025.9.1
 msgpack==1.1.2
 oauthlib==3.3.1
 packaging==25.0
@@ -31,9 +35,12 @@ PyJWT==2.9.0
 pyOpenSSL==25.3.0
 python-decouple==3.8
 python3-openid==3.2.0
+PyYAML==6.0.3
 redis==7.1.0
+referencing==0.37.0
 requests==2.32.4
 requests-oauthlib==2.0.0
+rpds-py==0.30.0
 service-identity==24.2.0
 social-auth-app-django==5.5.1
 social-auth-core==4.7.0
@@ -42,5 +49,6 @@ Twisted==25.5.0
 txaio==25.12.2
 typing_extensions==4.14.0
 ujson==5.11.0
+uritemplate==4.2.0
 urllib3==2.5.0
 zope.interface==8.1.1
