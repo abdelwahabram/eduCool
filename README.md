@@ -6,8 +6,6 @@ a backend server for an e-learning application that allows communication via pos
 
 educ~~ation~~ + ~~sch~~ool = educool
 
-that's it, honestly it's inspired by educative, I liked how the name is just the adjective of 'educate' and I started to think of other cool derivatives and combinations
-
 ## Project Status
 
 currently archived, untill further notice, the core APIs work fine, the users can create/enroll in courses, post, comment, or join video conference rooms
